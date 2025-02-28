@@ -182,6 +182,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         display: 'flex', 
         flexDirection: 'column',
         padding: 0,
+        overflow: 'hidden',
       }}
       title={
         <div style={{ 
@@ -231,7 +232,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   style={{
                     backgroundColor: message.type === 'user' ? '#1890ff' : '#52c41a',
                     marginRight: message.type === 'user' ? '0' : '12px',
-                    marginLeft: message.type === 'user' ? '12px' : '0'
+                    marginLeft: message.type === 'user' ? '12px' : '0',
+                    flexShrink: 0,
                   }}
                 />
                 <div
@@ -244,6 +246,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     fontSize: '14px',
                     lineHeight: '1.6',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    maxWidth: '100%',
+                    wordBreak: 'break-word',
                   }}
                 >
                   {message.content}

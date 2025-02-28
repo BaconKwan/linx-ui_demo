@@ -1489,7 +1489,7 @@ const PatientDiagnosisPage = () => {
                   <Space>
                     <BranchesOutlined />
                     <span>相似病例</span>
-                    <Tag color="blue">已匹配 5 个相似病例</Tag>
+                    <Tag color="blue">已匹配 3 个相似病例</Tag>
                   </Space>
                 }
               >
@@ -1554,13 +1554,13 @@ const PatientDiagnosisPage = () => {
                       </div>
 
                       {/* 主要症状 */}
-                      <div style={{ marginBottom: 8 }}>
-                        <Text type="secondary">主要症状：</Text>
-                        <div style={{ marginTop: 4 }}>
+                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>主要症状：</Text>
+                        <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
                           {patient.mainSymptoms.map((symptom, index) => (
                             <Tag 
                               key={index} 
-                              style={{ marginBottom: 4, marginRight: 4 }}
+                              style={{ margin: 0 }}
                             >
                               {symptom}
                             </Tag>
@@ -1569,19 +1569,19 @@ const PatientDiagnosisPage = () => {
                       </div>
 
                       {/* 诊断和基础疾病 */}
-                      <div style={{ marginBottom: 8 }}>
-                        <Text type="secondary">诊断：</Text>
-                        <Tag color="red" style={{ marginLeft: 4 }}>{patient.diagnosis}</Tag>
+                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>诊断：</Text>
+                        <Tag color="red" style={{ margin: 0 }}>{patient.diagnosis}</Tag>
                       </div>
 
-                      <div style={{ marginBottom: 8 }}>
-                        <Text type="secondary">基础疾病：</Text>
-                        <div style={{ marginTop: 4 }}>
+                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>基础疾病：</Text>
+                        <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
                           {patient.comorbidities.map((disease, index) => (
                             <Tag 
                               key={index} 
                               color="orange" 
-                              style={{ marginBottom: 4, marginRight: 4 }}
+                              style={{ margin: 0 }}
                             >
                               {disease}
                             </Tag>
@@ -1590,9 +1590,9 @@ const PatientDiagnosisPage = () => {
                       </div>
 
                       {/* 治疗结果 */}
-                      <div>
-                        <Text type="secondary">治疗结果：</Text>
-                        <Tag color="green" style={{ marginLeft: 4 }}>{patient.outcome}</Tag>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>治疗结果：</Text>
+                        <Tag color="green" style={{ margin: 0 }}>{patient.outcome}</Tag>
                       </div>
                     </Card>
                   ))}
@@ -1633,7 +1633,15 @@ const PatientDiagnosisPage = () => {
           <div>
             {/* 基本信息 */}
             <Card 
-              title={<><UserOutlined /> 基本信息</>}
+              title={
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <Space>
+                    <UserOutlined />
+                    <span>基本信息</span>
+                  </Space>
+                  <Tag color="orange">一级护理</Tag>
+                </div>
+              }
               size="small"
               style={{ marginBottom: '16px' }}
             >
