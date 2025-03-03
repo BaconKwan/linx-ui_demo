@@ -31,10 +31,14 @@ import {
   HeartTwoTone,
   AlertTwoTone,
   PushpinOutlined,
+  LikeOutlined,
+  DislikeOutlined,
+  LikeFilled,
+  DislikeFilled,
 } from '@ant-design/icons';
 import ChatWindow from '@/components/ChatWindow';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 // 模拟的患者详细信息数据
 const patientDetail = {
@@ -404,6 +408,24 @@ const PatientDiagnosisPage = () => {
   }>>([]);
   const [supplementInfo, setSupplementInfo] = useState('');
   const [mentionOptions, setMentionOptions] = useState<Array<{value: string}>>([]);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [currentSection, setCurrentSection] = useState<string>('');
+  const [commentText, setCommentText] = useState('');
+  const [actionType, setActionType] = useState<'like' | 'dislike'>('like');
+  const [feedback, setFeedback] = useState({
+    etiology: null as 'like' | 'dislike' | null,
+    severity: null as 'like' | 'dislike' | null,
+    progression: null as 'like' | 'dislike' | null,
+    antiviral: null as 'like' | 'dislike' | null,
+    antibiotic: null as 'like' | 'dislike' | null,
+    supportive: null as 'like' | 'dislike' | null,
+    management: null as 'like' | 'dislike' | null,
+    monitoring: null as 'like' | 'dislike' | null,
+    reasoning_symptoms: null as 'like' | 'dislike' | null,
+    reasoning_labs: null as 'like' | 'dislike' | null,
+    reasoning_imaging: null as 'like' | 'dislike' | null,
+    reasoning_pathogen: null as 'like' | 'dislike' | null,
+  });
 
   // 快捷质疑选项
   const quickQuestions = [
@@ -510,6 +532,36 @@ const PatientDiagnosisPage = () => {
     riskLevel: patientDetail.riskAssessment.cardiovascular.level,
   };
 
+  const handleFeedback = (section: string, type: 'like' | 'dislike') => {
+    // 如果点击的是当前已选中的按钮，则取消选择
+    if (feedback[section as keyof typeof feedback] === type) {
+      setFeedback(prev => ({
+        ...prev,
+        [section]: null
+      }));
+      return;
+    }
+    
+    setCurrentSection(section);
+    setActionType(type);
+    setCommentModalVisible(true);
+  };
+
+  const handleCommentSubmit = () => {
+    // 更新反馈状态
+    setFeedback(prev => ({
+      ...prev,
+      [currentSection]: actionType
+    }));
+    
+    // 显示成功消息
+    message.success('反馈提交成功');
+    
+    // 重置状态
+    setCommentModalVisible(false);
+    setCommentText('');
+  };
+
   // 总览标签页内容
   const OverviewTab = () => (
     <div>
@@ -529,7 +581,7 @@ const PatientDiagnosisPage = () => {
                 style={{ marginTop: 8 }}
                 items={[
                   { title: '病历分析', description: '完成' },
-                  { title: '数据推理', description: '完成' },
+                  { title: '多模态融合', description: '完成' },
                   { title: '深度推理', description: '完成' },
                   { title: '自我检查', description: '通过' },
                 ]}
@@ -648,10 +700,24 @@ const PatientDiagnosisPage = () => {
                 <Card
                   type="inner"
                   title={
-                    <Space>
-                      <ExperimentOutlined />
-                      <Text strong>病因分析</Text>
-                    </Space>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Space>
+                        <ExperimentOutlined />
+                        <Text strong>病因分析</Text>
+                      </Space>
+                      <Space>
+                        <Button
+                          type="text"
+                          icon={feedback.etiology === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                          onClick={() => handleFeedback('etiology', 'like')}
+                        />
+                        <Button
+                          type="text"
+                          icon={feedback.etiology === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                          onClick={() => handleFeedback('etiology', 'dislike')}
+                        />
+                      </Space>
+                    </div>
                   }
                   styles={{ body: { padding: '12px' } }}
                 >
@@ -685,10 +751,24 @@ const PatientDiagnosisPage = () => {
                 <Card
                   type="inner"
                   title={
-                    <Space>
-                      <WarningOutlined />
-                      <Text strong>病情严重程度</Text>
-                    </Space>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Space>
+                        <WarningOutlined />
+                        <Text strong>病情严重程度</Text>
+                      </Space>
+                      <Space>
+                        <Button
+                          type="text"
+                          icon={feedback.severity === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                          onClick={() => handleFeedback('severity', 'like')}
+                        />
+                        <Button
+                          type="text"
+                          icon={feedback.severity === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                          onClick={() => handleFeedback('severity', 'dislike')}
+                        />
+                      </Space>
+                    </div>
                   }
                   styles={{ body: { padding: '12px' } }}
                 >
@@ -712,10 +792,24 @@ const PatientDiagnosisPage = () => {
                 <Card
                   type="inner"
                   title={
-                    <Space>
-                      <LineChartOutlined />
-                      <Text strong>病情发展与风险预测</Text>
-                    </Space>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Space>
+                        <LineChartOutlined />
+                        <Text strong>病情发展与风险预测</Text>
+                      </Space>
+                      <Space>
+                        <Button
+                          type="text"
+                          icon={feedback.progression === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                          onClick={() => handleFeedback('progression', 'like')}
+                        />
+                        <Button
+                          type="text"
+                          icon={feedback.progression === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                          onClick={() => handleFeedback('progression', 'dislike')}
+                        />
+                      </Space>
+                    </div>
                   }
                   styles={{ body: { padding: '12px' } }}
                 >
@@ -772,9 +866,11 @@ const PatientDiagnosisPage = () => {
           {/* AI 干预措施推荐 */}
           <Card 
             title={
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <MedicineBoxOutlined style={{ marginRight: 8 }} />
-                AI 干预措施推荐
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>AI 干预措施推荐</span>
+                <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
+                  以下内容由 AI 系统自动生成，仅供医生参考
+                </Typography.Text>
               </div>
             }
             variant="outlined"
@@ -785,22 +881,36 @@ const PatientDiagnosisPage = () => {
               <Card 
                 type="inner" 
                 title={
-                  <Space>
-                    抗病毒治疗
-                    <Tooltip 
-                      title={
-                        <div>
-                          <p>参考指南：</p>
-                          <ul style={{ paddingLeft: 16, margin: 0 }}>
-                            <li>《新型冠状病毒感染诊疗方案（第十版）》</li>
-                            <li>《重症新型冠状病毒感染诊治指南（第四版）》</li>
-                          </ul>
-                        </div>
-                      }
-                    >
-                      <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
-                    </Tooltip>
-                  </Space>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Space>
+                      抗病毒治疗
+                      <Tooltip 
+                        title={
+                          <div>
+                            <p>参考指南：</p>
+                            <ul style={{ paddingLeft: 16, margin: 0 }}>
+                              <li>《新型冠状病毒感染诊疗方案（第十版）》</li>
+                              <li>《重症新型冠状病毒感染诊治指南（第四版）》</li>
+                            </ul>
+                          </div>
+                        }
+                      >
+                        <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
+                    </Space>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={feedback.antiviral === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                        onClick={() => handleFeedback('antiviral', 'like')}
+                      />
+                      <Button
+                        type="text"
+                        icon={feedback.antiviral === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                        onClick={() => handleFeedback('antiviral', 'dislike')}
+                      />
+                    </Space>
+                  </div>
                 } 
                 size="small"
                 styles={{ body: { padding: '12px' } }}
@@ -818,22 +928,36 @@ const PatientDiagnosisPage = () => {
               <Card 
                 type="inner" 
                 title={
-                  <Space>
-                    抗菌治疗
-                    <Tooltip 
-                      title={
-                        <div>
-                          <p>参考指南：</p>
-                          <ul style={{ paddingLeft: 16, margin: 0 }}>
-                            <li>《中国成人社区获得性肺炎诊断和治疗指南（2016年版）》</li>
-                            <li>《抗菌药物临床应用指导原则（2015年版）》</li>
-                          </ul>
-                        </div>
-                      }
-                    >
-                      <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
-                    </Tooltip>
-                  </Space>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Space>
+                      抗菌治疗
+                      <Tooltip 
+                        title={
+                          <div>
+                            <p>参考指南：</p>
+                            <ul style={{ paddingLeft: 16, margin: 0 }}>
+                              <li>《中国成人社区获得性肺炎诊断和治疗指南（2016年版）》</li>
+                              <li>《抗菌药物临床应用指导原则（2015年版）》</li>
+                            </ul>
+                          </div>
+                        }
+                      >
+                        <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
+                    </Space>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={feedback.antibiotic === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                        onClick={() => handleFeedback('antibiotic', 'like')}
+                      />
+                      <Button
+                        type="text"
+                        icon={feedback.antibiotic === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                        onClick={() => handleFeedback('antibiotic', 'dislike')}
+                      />
+                    </Space>
+                  </div>
                 } 
                 size="small"
                 styles={{ body: { padding: '12px' } }}
@@ -851,22 +975,36 @@ const PatientDiagnosisPage = () => {
               <Card 
                 type="inner" 
                 title={
-                  <Space>
-                    对症支持治疗
-                    <Tooltip 
-                      title={
-                        <div>
-                          <p>参考指南：</p>
-                          <ul style={{ paddingLeft: 16, margin: 0 }}>
-                            <li>《重症医学专家共识》</li>
-                            <li>《发热患者诊疗专家共识（2017版）》</li>
-                          </ul>
-                        </div>
-                      }
-                    >
-                      <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
-                    </Tooltip>
-                  </Space>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Space>
+                      对症支持治疗
+                      <Tooltip 
+                        title={
+                          <div>
+                            <p>参考指南：</p>
+                            <ul style={{ paddingLeft: 16, margin: 0 }}>
+                              <li>《重症医学专家共识》</li>
+                              <li>《发热患者诊疗专家共识（2017版）》</li>
+                            </ul>
+                          </div>
+                        }
+                      >
+                        <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
+                    </Space>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={feedback.supportive === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                        onClick={() => handleFeedback('supportive', 'like')}
+                      />
+                      <Button
+                        type="text"
+                        icon={feedback.supportive === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                        onClick={() => handleFeedback('supportive', 'dislike')}
+                      />
+                    </Space>
+                  </div>
                 } 
                 size="small"
                 styles={{ body: { padding: '12px' } }}
@@ -884,22 +1022,36 @@ const PatientDiagnosisPage = () => {
               <Card 
                 type="inner" 
                 title={
-                  <Space>
-                    基础疾病管理
-                    <Tooltip 
-                      title={
-                        <div>
-                          <p>参考指南：</p>
-                          <ul style={{ paddingLeft: 16, margin: 0 }}>
-                            <li>《中国高血压防治指南（2018年修订版）》</li>
-                            <li>《中国2型糖尿病防治指南（2020年版）》</li>
-                          </ul>
-                        </div>
-                      }
-                    >
-                      <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
-                    </Tooltip>
-                  </Space>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Space>
+                      基础疾病管理
+                      <Tooltip 
+                        title={
+                          <div>
+                            <p>参考指南：</p>
+                            <ul style={{ paddingLeft: 16, margin: 0 }}>
+                              <li>《中国高血压防治指南（2018年修订版）》</li>
+                              <li>《中国2型糖尿病防治指南（2020年版）》</li>
+                            </ul>
+                          </div>
+                        }
+                      >
+                        <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
+                    </Space>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={feedback.management === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                        onClick={() => handleFeedback('management', 'like')}
+                      />
+                      <Button
+                        type="text"
+                        icon={feedback.management === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                        onClick={() => handleFeedback('management', 'dislike')}
+                      />
+                    </Space>
+                  </div>
                 } 
                 size="small"
                 styles={{ body: { padding: '12px' } }}
@@ -915,22 +1067,36 @@ const PatientDiagnosisPage = () => {
               <Card 
                 type="inner" 
                 title={
-                  <Space>
-                    监测建议
-                    <Tooltip 
-                      title={
-                        <div>
-                          <p>参考指南：</p>
-                          <ul style={{ paddingLeft: 16, margin: 0 }}>
-                            <li>《重症医学监护治疗专家共识》</li>
-                            <li>《急性呼吸窘迫综合征诊治指南（2019版）》</li>
-                          </ul>
-                        </div>
-                      }
-                    >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Space>
+                      监测建议
+                      <Tooltip 
+                        title={
+                          <div>
+                            <p>参考指南：</p>
+                            <ul style={{ paddingLeft: 16, margin: 0 }}>
+                              <li>《重症医学监护治疗专家共识》</li>
+                              <li>《急性呼吸窘迫综合征诊治指南（2019版）》</li>
+                            </ul>
+                          </div>
+                        }
+                      >
                       <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
                     </Tooltip>
-                  </Space>
+                    </Space>
+                    <Space>
+                      <Button
+                        type="text"
+                        icon={feedback.monitoring === 'like' ? <LikeFilled style={{ color: '#1890ff' }} /> : <LikeOutlined />}
+                        onClick={() => handleFeedback('monitoring', 'like')}
+                      />
+                      <Button
+                        type="text"
+                        icon={feedback.monitoring === 'dislike' ? <DislikeFilled style={{ color: '#ff4d4f' }} /> : <DislikeOutlined />}
+                        onClick={() => handleFeedback('monitoring', 'dislike')}
+                      />
+                    </Space>
+                  </div>
                 } 
                 size="small"
                 styles={{ body: { padding: '12px' } }}
@@ -958,11 +1124,13 @@ const PatientDiagnosisPage = () => {
           </Card>
 
           {/* AI 推理过程 */}
-          <Card 
+          <Card
             title={
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <NodeIndexOutlined style={{ marginRight: 8 }} />
-                AI 诊断推理过程
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>AI 诊断推理过程</span>
+                <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
+                  以下内容由 AI 系统自动生成，仅供医生参考
+                </Typography.Text>
               </div>
             }
             variant="outlined"
@@ -970,31 +1138,62 @@ const PatientDiagnosisPage = () => {
             <Timeline 
               mode="left"
               items={mockData.aiReasoning.map((item, index) => ({
-                key: index,
-                dot: <BranchesOutlined style={{ fontSize: '16px' }} />,
-                color: item.confidence > 0.8 ? 'green' : 'blue',
                 children: (
-                  <Card 
-                    size="small" 
-                    style={{ marginBottom: 16 }}
-                    title={
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Card size="small" style={{ marginBottom: 8 }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: 8 
+                    }}>
+                      <Space>
                         <Text strong>{item.title}</Text>
-                        <Tag color="blue">
+                        <Tag color={item.confidence > 0.8 ? 'green' : 'orange'}>
                           置信度: {(item.confidence * 100).toFixed(0)}%
                         </Tag>
-                      </div>
-                    }
-                  >
-                    <div style={{ marginBottom: 12 }}>
+                      </Space>
+                      <Space>
+                        <Button
+                          type="text"
+                          icon={feedback[`reasoning_${item.title.toLowerCase().split('分析')[0]}` as keyof typeof feedback] === 'like' 
+                            ? <LikeFilled style={{ color: '#1890ff' }} /> 
+                            : <LikeOutlined />
+                          }
+                          onClick={() => handleFeedback(`reasoning_${item.title.toLowerCase().split('分析')[0]}`, 'like')}
+                        />
+                        <Button
+                          type="text"
+                          icon={feedback[`reasoning_${item.title.toLowerCase().split('分析')[0]}` as keyof typeof feedback] === 'dislike' 
+                            ? <DislikeFilled style={{ color: '#ff4d4f' }} /> 
+                            : <DislikeOutlined />
+                          }
+                          onClick={() => handleFeedback(`reasoning_${item.title.toLowerCase().split('分析')[0]}`, 'dislike')}
+                        />
+                      </Space>
+                    </div>
+
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      marginBottom: 8 
+                    }}>
                       <Text>{item.content}</Text>
                     </div>
-                    
+
+                    <div>
+                      <Text type="secondary">证据支持：</Text>
+                      <div style={{ marginTop: 4 }}>
+                        {item.evidence.map((evidence, i) => (
+                          <Tag key={i} style={{ marginBottom: 4 }}>{evidence}</Tag>
+                        ))}
+                      </div>
+                    </div>
+
                     <div style={{ 
                       background: '#f5f5f5', 
                       padding: '12px', 
                       borderRadius: '4px',
-                      marginBottom: 8
+                      marginTop: 8
                     }}>
                       <Text type="secondary">详细分析：</Text>
                       <ul style={{ 
@@ -1408,6 +1607,201 @@ const PatientDiagnosisPage = () => {
     );
   };
 
+  // 风险评估标签页组件
+  const RiskAssessmentTab = () => {
+    interface Risk {
+      name: string;
+      level: 'critical' | 'high' | 'medium';
+      probability: string;
+      timeWindow: string;
+      description: string;
+      indicators: string[];
+      references: string[];
+      suggestions: string[];
+    }
+
+    // 风险评估数据
+    const riskData: {
+      urgentRisks: Risk[];
+      potentialRisks: Risk[];
+    } = {
+      urgentRisks: [
+        {
+          name: '呼吸衰竭',
+          level: 'critical',
+          probability: '75%',
+          timeWindow: '24-48小时',
+          description: '患者目前存在明显的呼吸功能恶化趋势。血氧饱和度持续在93%左右波动，呼吸频率22次/分，较入院时有所增加。结合患者年龄及基础疾病情况，发生呼吸衰竭的风险很高。需要特别关注夜间血氧变化，警惕病情突然恶化。',
+          indicators: [
+            '血氧饱和度低于95%',
+            '呼吸频率增快',
+            '活动后气促明显',
+            '胸部CT显示病变范围扩大'
+          ],
+          references: [
+            '《新型冠状病毒肺炎诊疗方案（第十版）》',
+            '《重症医学监护治疗专家共识》',
+            'WHO临床管理指南2024版'
+          ],
+          suggestions: [
+            '持续血氧监测，保持吸氧充分，血氧饱和度低于93%时及时调整氧疗方案',
+            '准备无创呼吸机支持，制定呼吸支持升级预案',
+            '保持半卧位，定时翻身，必要时进行肺部物理治疗'
+          ]
+        },
+        {
+          name: '血栓并发症',
+          level: 'high',
+          probability: '60%',
+          timeWindow: '48-72小时',
+          description: '患者存在多个血栓形成的高危因素：①长期卧床活动受限；②重度炎症状态（D-二聚体1.2mg/L）；③基础疾病（高血压、糖尿病）；④高龄。这些因素显著增加了深静脉血栓和肺栓塞的风险。需要采取积极的预防措施。',
+          indicators: [
+            'D-二聚体显著升高',
+            '活动受限卧床时间延长',
+            '下肢静脉回流受阻',
+            '基础疾病导致的血液高凝状态'
+          ],
+          references: [
+            '《新型冠状病毒感染者血栓预防与管理专家共识》',
+            '《重症患者血栓预防指南2023版》',
+            'CHEST血栓预防指南更新版'
+          ],
+          suggestions: [
+            '立即启动预防性抗凝治疗，严密监测凝血功能',
+            '使用气压治疗装置，预防下肢深静脉血栓',
+            '指导患者适度活动，避免长期卧床制动'
+          ]
+        }
+      ],
+      potentialRisks: [
+        {
+          name: '基础疾病失控',
+          level: 'medium',
+          probability: '45%',
+          timeWindow: '3-7天',
+          description: '患者原有的高血压和糖尿病在当前感染应激状态下可能出现控制不佳。血压波动在135-155/85-95mmHg之间，空腹血糖波动在7-11mmol/L。炎症反应和治疗用药（如糖皮质激素）可能进一步影响血压和血糖的稳定性。',
+          indicators: [
+            '血压波动明显',
+            '血糖控制不佳',
+            '应激状态影响',
+            '治疗药物相互作用'
+          ],
+          references: [
+            '《新型冠状病毒感染合并基础疾病管理专家建议》',
+            '《糖尿病患者新冠病毒感染管理指南》',
+            '《高血压合并感染症治疗专家共识》'
+          ],
+          suggestions: [
+            '每4小时监测血压，根据波动情况及时调整降压方案',
+            '改用胰岛素控制血糖，每日监测空腹及餐后血糖',
+            '注意用药相互作用，避免加重基础疾病'
+          ]
+        },
+        {
+          name: '免疫功能紊乱',
+          level: 'medium',
+          probability: '40%',
+          timeWindow: '5-10天',
+          description: '患者存在免疫功能紊乱的风险，可能表现为过度免疫反应或免疫功能抑制。实验室检查显示炎症指标明显升高（CRP 65.8mg/L），提示存在强烈的炎症反应。需要警惕免疫功能紊乱导致的并发症，如细菌感染、真菌感染等。',
+          indicators: [
+            'CRP显著升高',
+            '淋巴细胞计数变化',
+            '炎症因子水平升高',
+            '免疫功能指标异常'
+          ],
+          references: [
+            '《重症新冠患者免疫功能监测专家共识》',
+            '《感染性疾病免疫治疗指南》',
+            '国际免疫学会治疗建议2024版'
+          ],
+          suggestions: [
+            '定期监测免疫功能指标和炎症因子水平',
+            '根据免疫状态调整治疗方案，避免过度免疫反应',
+            '警惕继发感染，必要时进行预防性治疗'
+          ]
+        }
+      ]
+    };
+
+    const RiskCard = ({ risk }: { risk: Risk }) => (
+      <Card
+        style={{ marginBottom: 16 }}
+        title={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Space>
+              <Text strong>{risk.name}</Text>
+              <Tag color={risk.level === 'critical' ? '#f5222d' : risk.level === 'high' ? '#fa541c' : '#fa8c16'}>
+                {risk.level === 'critical' ? '危急' : risk.level === 'high' ? '高危' : '中危'}
+              </Tag>
+              <Tag color="blue">发生概率：{risk.probability}</Tag>
+              <Tag color="purple">预警时间：{risk.timeWindow}</Tag>
+            </Space>
+          </div>
+        }
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>风险描述：</Text>
+          <Paragraph style={{ marginTop: 8 }}>{risk.description}</Paragraph>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>参考指标：</Text>
+          <div style={{ marginTop: 8 }}>
+            {risk.indicators.map((indicator, index) => (
+              <Tag key={index} style={{ marginBottom: 4 }}>{indicator}</Tag>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>参考依据：</Text>
+          <div style={{ marginTop: 8 }}>
+            {risk.references.map((ref, index) => (
+              <Tag key={index} color="blue" style={{ marginBottom: 4 }}>{ref}</Tag>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Text strong>管理建议：</Text>
+          <div style={{ marginTop: 8 }}>
+            {risk.suggestions.map((suggestion, index) => (
+              <Alert
+                key={index}
+                message={suggestion}
+                type="info"
+                showIcon
+                style={{ marginBottom: 8 }}
+              />
+            ))}
+          </div>
+        </div>
+      </Card>
+    );
+
+    return (
+      <div>
+        <Alert
+          message="风险评估说明"
+          description="基于患者的临床表现、实验室检查结果、影像学发现等多维度数据，结合人工智能分析模型，对患者可能面临的风险进行全面评估。风险等级划分为危急（红色）、高危（橙色）和中危（黄色）三级，并按照紧急程度和严重程度排序。"
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
+
+        <Title level={4}>迫切需要关注的风险</Title>
+        {riskData.urgentRisks.map((risk, index) => (
+          <RiskCard key={index} risk={risk} />
+        ))}
+
+        <Title level={4} style={{ marginTop: 24 }}>潜在风险</Title>
+        {riskData.potentialRisks.map((risk, index) => (
+          <RiskCard key={index} risk={risk} />
+        ))}
+      </div>
+    );
+  };
+
   // 更新标签页配置
   const items = [
     {
@@ -1611,7 +2005,7 @@ const PatientDiagnosisPage = () => {
     {
       key: 'risk',
       label: '风险评估',
-      children: '风险评估内容',
+      children: <RiskAssessmentTab />,
     },
     {
       key: 'imaging',
@@ -2098,6 +2492,29 @@ const PatientDiagnosisPage = () => {
             </Space>
           </div>
         </div>
+      </Modal>
+
+      {/* 评论对话框 */}
+      <Modal
+        title={`${actionType === 'like' ? '点赞' : '点踩'}反馈`}
+        open={commentModalVisible}
+        onOk={handleCommentSubmit}
+        onCancel={() => {
+          setCommentModalVisible(false);
+          setCommentText('');
+        }}
+        okText="提交"
+        cancelText="取消"
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Text>请输入您的评论意见：</Text>
+        </div>
+        <Input.TextArea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder="请输入您对该分析结果的具体意见..."
+          rows={4}
+        />
       </Modal>
     </>
   );
