@@ -7,8 +7,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'DIXcover - AI医疗辅诊系统',
-  description: '基于人工智能的医疗辅助诊断系统',
+  title: '灵析 AI - 智能医疗辅助诊断系统',
+  description: '灵析 AI (LingX AI) - 基于人工智能的医疗辅助诊断系统',
 };
 
 export default function RootLayout({

@@ -80,7 +80,7 @@ const Navbar = () => {
       }}>
         <Image
           src="/logo.png"
-          alt="DIXcover Logo"
+          alt="LingX AI Logo"
           width={32}
           height={32}
           style={{ marginRight: '8px' }}
@@ -90,7 +90,7 @@ const Navbar = () => {
           fontSize: '18px', 
           fontWeight: 'bold' 
         }}>
-          DIXcover
+          灵析 AI
         </span>
       </div>
 
