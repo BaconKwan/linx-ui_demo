@@ -109,8 +109,6 @@ const patientDetail = {
 
 // 添加新的模拟数据
 const mockData = {
-  // ... 保持现有的 patientDetail 数据 ...
-  
   aiReasoning: [
     {
       timestamp: '2024-03-20 14:30:00',
@@ -1389,7 +1387,223 @@ const PatientDiagnosisPage = () => {
     </div>
   );
 
-  // 添加健康监测标签页组件
+  // 病历记录标签页组件
+  const MedicalRecordTab = () => {
+    // 病历数据
+    const medicalRecords = [
+      {
+        date: '2024-03-20',
+        title: '入院记录',
+        content: {
+          mainComplaint: '发热3天，呼吸困难2天',
+          presentIllness: '患者3天前无明显诱因出现发热，最高体温38.5℃，伴有咳嗽、咳痰，痰为白色粘痰。2天前出现呼吸困难，活动后明显，休息后可缓解。同时伴有乏力、食欲下降等症状。',
+          pastHistory: '高血压病史5年，长期服用缬沙坦控制；2型糖尿病病史3年，规律服用二甲双胍治疗。',
+          physicalExam: '体温38.5℃，脉搏95次/分，呼吸22次/分，血压135/85mmHg，神志清楚，精神一般，双肺呼吸音粗，可闻及散在干湿性啰音。'
+        }
+      },
+      {
+        date: '2024-03-21',
+        title: '病程记录',
+        content: {
+          description: '患者发热持续，最高体温38.3℃，呼吸困难较前加重，血氧饱和度下降至93%。完善新冠病毒核酸检测及病原学检测，影像学检查提示双肺感染性改变。',
+          treatment: [
+            '抗病毒治疗',
+            '抗感染治疗',
+            '对症支持治疗',
+            '基础疾病用药维持'
+          ]
+        }
+      },
+      {
+        date: '2024-03-22',
+        title: '病程记录',
+        content: {
+          description: '实验室检查结果回报，提示炎症指标升高，病原学检测提示新冠病毒核酸阳性。患者体温仍有波动，呼吸困难症状持续，建议继续强化治疗。'
+        }
+      }
+    ];
+
+    // 相似病例数据
+    const similarCases = [
+      {
+        id: 'P003',
+        name: '王某',
+        age: 62,
+        gender: '男',
+        mainSymptoms: ['发热', '呼吸困难', '咳嗽'],
+        diagnosis: '新型冠状病毒感染',
+        comorbidities: ['高血压', '冠心病'],
+        similarity: 92,
+        outcome: '治愈出院',
+      },
+      {
+        id: 'P004',
+        name: '李某',
+        age: 58,
+        gender: '女',
+        mainSymptoms: ['发热', '乏力', '呼吸急促'],
+        diagnosis: '新型冠状病毒感染',
+        comorbidities: ['糖尿病'],
+        similarity: 88,
+        outcome: '好转出院',
+      },
+      {
+        id: 'P005',
+        name: '赵某',
+        age: 65,
+        gender: '男',
+        mainSymptoms: ['发热', '咳嗽', '胸闷'],
+        diagnosis: '新型冠状病毒感染',
+        comorbidities: ['高血压', '糖尿病'],
+        similarity: 85,
+        outcome: '治愈出院',
+      }
+    ];
+
+    const SimilarCaseCard = ({ patient }: { patient: typeof similarCases[0] }) => (
+      <Card
+        key={patient.id}
+        size="small"
+        styles={{ body: { padding: '12px' } }}
+        hoverable
+      >
+        {/* 患者基本信息和相似度 */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: 8
+        }}>
+          <Space size={4}>
+            <Text strong>{patient.name}</Text>
+            <Text type="secondary">
+              {patient.age}岁 {patient.gender}
+            </Text>
+          </Space>
+          <Tag color="blue" style={{ margin: 0 }}>
+            相似度: {patient.similarity}%
+          </Tag>
+        </div>
+
+        {/* 主要症状 */}
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+          <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>主要症状：</Text>
+          <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
+            {patient.mainSymptoms.map((symptom, index) => (
+              <Tag 
+                key={index} 
+                style={{ margin: 0 }}
+              >
+                {symptom}
+              </Tag>
+            ))}
+          </div>
+        </div>
+
+        {/* 诊断和基础疾病 */}
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+          <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>诊断：</Text>
+          <Tag color="red" style={{ margin: 0 }}>{patient.diagnosis}</Tag>
+        </div>
+
+        <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+          <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>基础疾病：</Text>
+          <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
+            {patient.comorbidities.map((disease, index) => (
+              <Tag 
+                key={index} 
+                color="orange" 
+                style={{ margin: 0 }}
+              >
+                {disease}
+              </Tag>
+            ))}
+          </div>
+        </div>
+
+        {/* 治疗结果 */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>治疗结果：</Text>
+          <Tag color="green" style={{ margin: 0 }}>{patient.outcome}</Tag>
+        </div>
+      </Card>
+    );
+
+    return (
+      <div>
+        <Row gutter={[24, 24]}>
+          {/* 左侧病历记录 */}
+          <Col span={16}>
+            <Card title="病历记录" variant="borderless">
+              <Timeline
+                items={medicalRecords.map(record => ({
+                  children: (
+                    <div style={{ marginBottom: 16 }}>
+                      <Text strong>{record.date} {record.title}</Text>
+                      <div style={{ marginTop: 8 }}>
+                        {record.title === '入院记录' ? (
+                          <>
+                            <Text>主诉：{record.content.mainComplaint}</Text>
+                            <div style={{ margin: '8px 0' }}>
+                              <Text type="secondary">现病史：</Text>
+                              <p>{record.content.presentIllness}</p>
+                            </div>
+                            <div style={{ margin: '8px 0' }}>
+                              <Text type="secondary">既往史：</Text>
+                              <p>{record.content.pastHistory}</p>
+                            </div>
+                            <div style={{ margin: '8px 0' }}>
+                              <Text type="secondary">体格检查：</Text>
+                              <p>{record.content.physicalExam}</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p>{record.content.description}</p>
+                            {record.content.treatment && (
+                              <div style={{ margin: '8px 0' }}>
+                                <Text type="secondary">治疗方案：</Text>
+                                <ul style={{ marginLeft: 24 }}>
+                                  {record.content.treatment.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )
+                }))}
+              />
+            </Card>
+          </Col>
+
+          {/* 右侧相似病例 */}
+          <Col span={8}>
+            <Card 
+              title={
+                <Space>
+                  <BranchesOutlined />
+                  <span>相似病例</span>
+                  <Tag color="blue">已匹配 {similarCases.length} 个相似病例</Tag>
+                </Space>
+              }
+            >
+              <Space direction="vertical" style={{ width: '100%' }} size={16}>
+                {similarCases.map(patient => (
+                  <SimilarCaseCard key={patient.id} patient={patient} />
+                ))}
+              </Space>
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  // 健康监测标签页组件
   const MonitoringTab = () => {
     const [selectedDate, setSelectedDate] = useState(monitoringData.vitalSigns[0].date);
 
@@ -1815,6 +2029,7 @@ const PatientDiagnosisPage = () => {
     );
   };
 
+  // 影像资料标签页组件
   const ImagingTab = () => {
     const viewerRef = useRef<HTMLDivElement>(null);
     const [selectedTool, setSelectedTool] = useState('Wwwc');
@@ -2409,6 +2624,11 @@ const PatientDiagnosisPage = () => {
     );
   };
 
+  // 检验结果标签页组件
+  const LabResultsTab = () => {
+    return <div>检验结果</div>;
+  };
+
   // 更新标签页配置
   const items = [
     {
@@ -2419,190 +2639,7 @@ const PatientDiagnosisPage = () => {
     {
       key: 'medical-records',
       label: '病历记录',
-      children: (
-        <div>
-          <Row gutter={[24, 24]}>
-            {/* 左侧病历记录 */}
-            <Col span={16}>
-              <Card title="病历记录" variant="borderless">
-                <Timeline
-                  items={[
-                    {
-                      children: (
-                        <div style={{ marginBottom: 16 }}>
-                          <Text strong>2024-03-20 入院记录</Text>
-                          <div style={{ marginTop: 8 }}>
-                            <Text>主诉：发热3天，呼吸困难2天</Text>
-                            <div style={{ margin: '8px 0' }}>
-                              <Text type="secondary">现病史：</Text>
-                              <p>患者3天前无明显诱因出现发热，最高体温38.5℃，伴有咳嗽、咳痰，痰为白色粘痰。2天前出现呼吸困难，活动后明显，休息后可缓解。同时伴有乏力、食欲下降等症状。</p>
-                            </div>
-                            <div style={{ margin: '8px 0' }}>
-                              <Text type="secondary">既往史：</Text>
-                              <p>高血压病史5年，长期服用缬沙坦控制；2型糖尿病病史3年，规律服用二甲双胍治疗。</p>
-                            </div>
-                            <div style={{ margin: '8px 0' }}>
-                              <Text type="secondary">体格检查：</Text>
-                              <p>体温38.5℃，脉搏95次/分，呼吸22次/分，血压135/85mmHg，神志清楚，精神一般，双肺呼吸音粗，可闻及散在干湿性啰音。</p>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    },
-                    {
-                      children: (
-                        <div style={{ marginBottom: 16 }}>
-                          <Text strong>2024-03-21 病程记录</Text>
-                          <div style={{ marginTop: 8 }}>
-                            <p>患者发热持续，最高体温38.3℃，呼吸困难较前加重，血氧饱和度下降至93%。完善新冠病毒核酸检测及病原学检测，影像学检查提示双肺感染性改变。</p>
-                            <div style={{ margin: '8px 0' }}>
-                              <Text type="secondary">治疗方案：</Text>
-                              <ul style={{ marginLeft: 24 }}>
-                                <li>抗病毒治疗</li>
-                                <li>抗感染治疗</li>
-                                <li>对症支持治疗</li>
-                                <li>基础疾病用药维持</li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    },
-                    {
-                      children: (
-                        <div style={{ marginBottom: 16 }}>
-                          <Text strong>2024-03-22 病程记录</Text>
-                          <div style={{ marginTop: 8 }}>
-                            <p>实验室检查结果回报，提示炎症指标升高，病原学检测提示新冠病毒核酸阳性。患者体温仍有波动，呼吸困难症状持续，建议继续强化治疗。</p>
-                          </div>
-                        </div>
-                      )
-                    }
-                  ]}
-                />
-              </Card>
-            </Col>
-
-            {/* 右侧相似病例 */}
-            <Col span={8}>
-              <Card 
-                title={
-                  <Space>
-                    <BranchesOutlined />
-                    <span>相似病例</span>
-                    <Tag color="blue">已匹配 3 个相似病例</Tag>
-                  </Space>
-                }
-              >
-                <Space direction="vertical" style={{ width: '100%' }} size={16}>
-                  {[
-                    {
-                      id: 'P003',
-                      name: '王某',
-                      age: 62,
-                      gender: '男',
-                      mainSymptoms: ['发热', '呼吸困难', '咳嗽'],
-                      diagnosis: '新型冠状病毒感染',
-                      comorbidities: ['高血压', '冠心病'],
-                      similarity: 92,
-                      outcome: '治愈出院',
-                    },
-                    {
-                      id: 'P004',
-                      name: '李某',
-                      age: 58,
-                      gender: '女',
-                      mainSymptoms: ['发热', '乏力', '呼吸急促'],
-                      diagnosis: '新型冠状病毒感染',
-                      comorbidities: ['糖尿病'],
-                      similarity: 88,
-                      outcome: '好转出院',
-                    },
-                    {
-                      id: 'P005',
-                      name: '赵某',
-                      age: 65,
-                      gender: '男',
-                      mainSymptoms: ['发热', '咳嗽', '胸闷'],
-                      diagnosis: '新型冠状病毒感染',
-                      comorbidities: ['高血压', '糖尿病'],
-                      similarity: 85,
-                      outcome: '治愈出院',
-                    },
-                  ].map(patient => (
-                    <Card
-                      key={patient.id}
-                      size="small"
-                      styles={{ body: { padding: '12px' } }}
-                      hoverable
-                    >
-                      {/* 患者基本信息和相似度 */}
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        marginBottom: 8
-                      }}>
-                        <Space size={4}>
-                          <Text strong>{patient.name}</Text>
-                          <Text type="secondary">
-                            {patient.age}岁 {patient.gender}
-                          </Text>
-                        </Space>
-                        <Tag color="blue" style={{ margin: 0 }}>
-                          相似度: {patient.similarity}%
-                        </Tag>
-                      </div>
-
-                      {/* 主要症状 */}
-                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
-                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>主要症状：</Text>
-                        <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
-                          {patient.mainSymptoms.map((symptom, index) => (
-                            <Tag 
-                              key={index} 
-                              style={{ margin: 0 }}
-                            >
-                              {symptom}
-                            </Tag>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 诊断和基础疾病 */}
-                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
-                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>诊断：</Text>
-                        <Tag color="red" style={{ margin: 0 }}>{patient.diagnosis}</Tag>
-                      </div>
-
-                      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
-                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>基础疾病：</Text>
-                        <div style={{ display: 'flex', gap: 4, overflow: 'hidden' }}>
-                          {patient.comorbidities.map((disease, index) => (
-                            <Tag 
-                              key={index} 
-                              color="orange" 
-                              style={{ margin: 0 }}
-                            >
-                              {disease}
-                            </Tag>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 治疗结果 */}
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Text type="secondary" style={{ flexShrink: 0, marginRight: 4 }}>治疗结果：</Text>
-                        <Tag color="green" style={{ margin: 0 }}>{patient.outcome}</Tag>
-                      </div>
-                    </Card>
-                  ))}
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      ),
+      children: <MedicalRecordTab />,
     },
     {
       key: 'monitoring',
@@ -2616,18 +2653,13 @@ const PatientDiagnosisPage = () => {
     },
     {
       key: 'imaging',
-      label: (
-        <span>
-          <FileImageOutlined />
-          影像资料
-        </span>
-      ),
+      label: '影像资料',
       children: <ImagingTab />
     },
     {
       key: 'lab',
       label: '检验结果',
-      children: '检验结果内容',
+      children: <LabResultsTab />,
     },
   ];
 
