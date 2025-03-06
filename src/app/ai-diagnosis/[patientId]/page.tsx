@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, Descriptions, Tag, Progress, Row, Col, Typography, Divider, Tabs, Button, Statistic, Timeline, List, Collapse, Space, Alert, Tooltip, Steps, message, Modal, Input, Upload, Mentions, Slider, Table } from 'antd';
+import Image from 'next/image';
 import { 
   UserOutlined, 
   HeartOutlined, 
@@ -35,8 +36,19 @@ import {
   DislikeOutlined,
   LikeFilled,
   DislikeFilled,
+  DragOutlined,
+  ZoomInOutlined,
+  ControlOutlined,
+  BorderOutlined,
+  LineOutlined,
+  RetweetOutlined,
+  CameraOutlined,
+  UndoOutlined,
+  SearchOutlined,
+  ZoomOutOutlined,
 } from '@ant-design/icons';
 import ChatWindow from '@/components/ChatWindow';
+import cornerstone from 'cornerstone-core';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -1802,6 +1814,479 @@ const PatientDiagnosisPage = () => {
     );
   };
 
+  const ImagingTab = () => {
+    const viewerRef = useRef<HTMLDivElement>(null);
+    const [selectedTool, setSelectedTool] = useState('Wwwc');
+    const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
+    const [imageIds, setImageIds] = useState<string[]>([]);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [measurements, setMeasurements] = useState<any[]>([]);
+    const [viewport, setViewport] = useState({
+      scale: 1,
+      translation: { x: 0, y: 0 },
+      voi: { windowWidth: 400, windowCenter: 40 },
+      rotation: 0,
+    });
+
+    // DICOM 数据集
+    const dicomStudies = [
+      {
+        id: 'LUNG_CT',
+        type: 'CT',
+        date: '2024-03-20',
+        description: '肺部CT',
+        path: '/static/Lung_CT',
+        series: [
+          {
+            id: 'LUNG_CT_001',
+            description: '肺部CT序列',
+            path: '/static/Lung_CT'
+          }
+        ]
+      },
+      {
+        id: 'BRAIN_CT',
+        type: 'CT',
+        date: '2024-03-21',
+        description: '脑部CT',
+        path: '/static/Brain_CT',
+        series: [
+          {
+            id: 'BRAIN_CT_001',
+            description: '脑部CT序列',
+            path: '/static/Brain_CT'
+          }
+        ]
+      }
+    ];
+
+    // 重置视图
+    const handleReset = () => {
+      if (!viewerRef.current) return;
+      const cs = require('cornerstone-core');
+      const element = viewerRef.current;
+      
+      // 重置视口参数
+      const defaultViewport = cs.default.getDefaultViewport(element);
+      cs.default.setViewport(element, defaultViewport);
+      cs.default.updateImage(element);
+      
+      // 重置状态
+      setViewport({
+        scale: 1,
+        translation: { x: 0, y: 0 },
+        voi: { windowWidth: 400, windowCenter: 40 },
+        rotation: 0,
+      });
+      
+      message.success('视图已重置');
+    };
+
+    // 截图功能
+    const handleScreenshot = () => {
+      if (!viewerRef.current) return;
+      
+      try {
+        const element = viewerRef.current;
+        const enabledElement = cornerstone.getEnabledElement(element);
+        if (!enabledElement || !enabledElement.canvas) {
+          message.error('未找到可用的图像');
+          return;
+        }
+
+        // 获取当前显示的 canvas
+        const canvas = enabledElement.canvas;
+
+        // 创建临时 canvas 来包含所有标注
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const ctx = tempCanvas.getContext('2d');
+        
+        if (!ctx) {
+          message.error('创建截图失败');
+          return;
+        }
+
+        // 绘制原始图像和标注
+        ctx.drawImage(canvas, 0, 0);
+
+        // 转换为图片并下载
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const link = document.createElement('a');
+        link.download = `dicom-image-${timestamp}.png`;
+        link.href = tempCanvas.toDataURL('image/png');
+        link.click();
+        
+        message.success('截图已保存');
+      } catch (error) {
+        console.error('Screenshot error:', error);
+        message.error('截图失败');
+      }
+    };
+
+    // 加载 DICOM 序列
+    const loadDicomSeries = async (seriesPath: string) => {
+      try {
+        const cs = await import('cornerstone-core');
+        const csTools = await import('cornerstone-tools');
+        const csWadoImageLoader = await import('cornerstone-wado-image-loader');
+        
+        // 获取目录下的所有 DICOM 文件
+        const response = await fetch(`/api/dicom-files?path=${seriesPath}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || '加载 DICOM 文件失败');
+        }
+
+        if (!Array.isArray(data)) {
+          console.error('Invalid response data:', data);
+          throw new Error('服务器返回数据格式错误');
+        }
+
+        if (data.length === 0) {
+          message.warning('未找到 DICOM 文件');
+          return;
+        }
+
+        // 创建 imageIds
+        const newImageIds = data.map(file => `wadouri:${seriesPath}/${file}`);
+        setImageIds(newImageIds);
+        setCurrentImageIndex(0);
+
+        // 加载第一张图像
+        if (!viewerRef.current) {
+          throw new Error('影像查看器未初始化');
+        }
+
+        const image = await cs.default.loadAndCacheImage(newImageIds[0]);
+        cs.default.displayImage(viewerRef.current, image);
+        
+        message.success(`成功加载 ${newImageIds.length} 张影像`);
+      } catch (error) {
+        console.error('Failed to load DICOM series:', error);
+        message.error(error instanceof Error ? error.message : '加载影像数据失败');
+      }
+    };
+
+    // 初始化 Cornerstone
+    useEffect(() => {
+      if (!viewerRef.current) return;
+
+      const initCornerstone = async () => {
+        try {
+          const cs = await import('cornerstone-core');
+          const csTools = await import('cornerstone-tools');
+          const csWadoImageLoader = await import('cornerstone-wado-image-loader');
+          const dicomParser = await import('dicom-parser');
+          const Hammer = await import('hammerjs');
+          
+          cs.default.enable(viewerRef.current!);
+          
+          csWadoImageLoader.default.external.cornerstone = cs.default;
+          csWadoImageLoader.default.external.dicomParser = dicomParser.default;
+          csWadoImageLoader.default.configure({
+            beforeSend: (xhr: XMLHttpRequest) => {
+              xhr.responseType = 'arraybuffer';
+            }
+          });
+
+          csTools.default.external.cornerstone = cs.default;
+          csTools.default.external.Hammer = Hammer.default;
+          csTools.default.init({
+            mouseEnabled: true,
+            touchEnabled: true,
+            globalToolSyncEnabled: false,
+            showSVGCursors: true
+          });
+
+          // 注册所有需要的工具
+          csTools.default.addTool(csTools.default.PanTool);
+          csTools.default.addTool(csTools.default.ZoomTool);
+          csTools.default.addTool(csTools.default.WwwcTool);
+          csTools.default.addTool(csTools.default.RectangleRoiTool);
+          csTools.default.addTool(csTools.default.LengthTool);
+          csTools.default.addTool(csTools.default.RotateTool);
+          csTools.default.addTool(csTools.default.StackScrollTool);
+
+          // 设置默认工具
+          csTools.default.setToolActive('Wwwc', { mouseButtonMask: 1 });
+          csTools.default.setToolActive('StackScroll', { mouseButtonMask: 2 });
+
+          // 添加测量工具的事件监听
+          if (viewerRef.current) {
+            viewerRef.current.addEventListener('cornerstonetoolsmeasurementcompleted', (evt: Event) => {
+              try {
+                const eventData = (evt as any).detail;
+                if (!eventData?.toolType || !eventData?.measurementData) {
+                  console.warn('测量事件缺少必要数据');
+                  return;
+                }
+
+                setMeasurements(prev => [...prev, {
+                  type: eventData.toolType,
+                  data: eventData.measurementData,
+                  timestamp: new Date().toISOString()
+                }]);
+
+                // 显示测量结果
+                let measurementText = '';
+                if (eventData.toolType === 'Length') {
+                  measurementText = `距离: ${eventData.measurementData.length.toFixed(2)} mm`;
+                } else if (eventData.toolType === 'RectangleRoi') {
+                  measurementText = `面积: ${eventData.measurementData.area.toFixed(2)} mm²`;
+                }
+                
+                if (measurementText) {
+                  message.info(measurementText);
+                }
+              } catch (error) {
+                console.error('处理测量事件时出错:', error);
+              }
+            });
+
+            // 添加视口变化事件监听
+            viewerRef.current.addEventListener('cornerstoneimagerendered', (evt: Event) => {
+              try {
+                const eventData = (evt as any).detail;
+                const viewport = eventData.viewport;
+                setViewport({
+                  scale: viewport.scale,
+                  translation: { x: viewport.translation.x, y: viewport.translation.y },
+                  voi: { windowWidth: viewport.voi.windowWidth, windowCenter: viewport.voi.windowCenter },
+                  rotation: viewport.rotation,
+                });
+              } catch (error) {
+                console.error('处理视口事件时出错:', error);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Failed to initialize Cornerstone:', error);
+          message.error('初始化影像查看器失败');
+        }
+      };
+
+      initCornerstone();
+
+      return () => {
+        if (viewerRef.current) {
+          const cs = require('cornerstone-core');
+          cs.default.disable(viewerRef.current);
+        }
+      };
+    }, []);
+
+    // 处理工具切换
+    const handleToolChange = (tool: string) => {
+      if (!viewerRef.current) return;
+      
+      const csTools = require('cornerstone-tools');
+      
+      // 停用所有工具
+      ['Pan', 'Zoom', 'Wwwc', 'RectangleRoi', 'Length', 'Rotate'].forEach(toolName => {
+        csTools.default.setToolPassive(toolName);
+      });
+      
+      // 启用选中的工具
+      csTools.default.setToolActive(tool, { mouseButtonMask: 1 });
+      setSelectedTool(tool);
+      
+      // 保持滚动工具激活
+      csTools.default.setToolActive('StackScroll', { mouseButtonMask: 2 });
+      
+      // 显示工具提示
+      const toolTips: { [key: string]: string } = {
+        Pan: '使用鼠标左键拖动图像',
+        Zoom: '使用鼠标左键上下拖动进行缩放',
+        Wwwc: '使用鼠标左键调整窗宽窗位',
+        RectangleRoi: '使用鼠标左键绘制矩形区域',
+        Length: '使用鼠标左键测量距离',
+        Rotate: '使用鼠标左键旋转图像'
+      };
+      
+      message.info(toolTips[tool] || '工具已切换');
+    };
+
+    // 处理序列选择
+    const handleSeriesSelect = (seriesId: string) => {
+      setSelectedSeries(seriesId);
+      const series = dicomStudies
+        .flatMap(study => study.series)
+        .find(s => s.id === seriesId);
+      
+      if (series) {
+        loadDicomSeries(series.path);
+      }
+    };
+
+    // 处理图像切换
+    const handleImageScroll = (delta: number) => {
+      if (imageIds.length === 0) return;
+
+      const newIndex = Math.max(0, Math.min(currentImageIndex + delta, imageIds.length - 1));
+      if (newIndex !== currentImageIndex && viewerRef.current) {
+        setCurrentImageIndex(newIndex);
+        const cs = require('cornerstone-core');
+        cs.default.loadAndCacheImage(imageIds[newIndex]).then((image: any) => {
+          cs.default.displayImage(viewerRef.current!, image);
+        });
+      }
+    };
+
+    return (
+      <div>
+        <Row gutter={[16, 16]}>
+          {/* 左侧检查列表 */}
+          <Col span={6}>
+            <Card title="检查列表">
+              <List
+                dataSource={dicomStudies}
+                renderItem={study => (
+                  <List.Item>
+                    <Card size="small" style={{ width: '100%' }}>
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <div>
+                          <Tag color="blue">{study.type}</Tag>
+                          <span style={{ marginLeft: 8 }}>{study.date}</span>
+                        </div>
+                        <Text strong>{study.description}</Text>
+                        <List
+                          size="small"
+                          dataSource={study.series}
+                          renderItem={series => (
+                            <List.Item
+                              onClick={() => handleSeriesSelect(series.id)}
+                              style={{ 
+                                cursor: 'pointer',
+                                backgroundColor: selectedSeries === series.id ? '#e6f7ff' : 'transparent'
+                              }}
+                            >
+                              <Space>
+                                <div>{series.description}</div>
+                              </Space>
+                            </List.Item>
+                          )}
+                        />
+                      </Space>
+                    </Card>
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </Col>
+
+          {/* 右侧影像查看器 */}
+          <Col span={18}>
+            <Card
+              title={
+                <Space>
+                  <span>影像查看器</span>
+                  {imageIds.length > 0 && (
+                    <Tag color="blue">
+                      {currentImageIndex + 1} / {imageIds.length}
+                    </Tag>
+                  )}
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    icon={<DragOutlined />}
+                    type={selectedTool === 'Pan' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('Pan')}
+                  >
+                    平移
+                  </Button>
+                  <Button
+                    icon={<ZoomInOutlined />}
+                    type={selectedTool === 'Zoom' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('Zoom')}
+                  >
+                    缩放
+                  </Button>
+                  <Button
+                    icon={<ControlOutlined />}
+                    type={selectedTool === 'Wwwc' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('Wwwc')}
+                  >
+                    窗宽窗位
+                  </Button>
+                  <Button
+                    icon={<BorderOutlined />}
+                    type={selectedTool === 'RectangleRoi' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('RectangleRoi')}
+                  >
+                    矩形标注
+                  </Button>
+                  <Button
+                    icon={<LineOutlined />}
+                    type={selectedTool === 'Length' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('Length')}
+                  >
+                    测量
+                  </Button>
+                  <Button
+                    icon={<RetweetOutlined />}
+                    type={selectedTool === 'Rotate' ? 'primary' : 'default'}
+                    onClick={() => handleToolChange('Rotate')}
+                  >
+                    旋转
+                  </Button>
+                  <Button
+                    icon={<UndoOutlined />}
+                    onClick={handleReset}
+                  >
+                    重置
+                  </Button>
+                  <Button
+                    icon={<CameraOutlined />}
+                    onClick={handleScreenshot}
+                  >
+                    截图
+                  </Button>
+                </Space>
+              }
+            >
+              <div
+                ref={viewerRef}
+                style={{
+                  width: '100%',
+                  height: 'calc(100vh - 300px)',
+                  backgroundColor: '#000',
+                  position: 'relative'
+                }}
+                onWheel={(e) => {
+                  e.preventDefault();
+                  handleImageScroll(e.deltaY > 0 ? 1 : -1);
+                }}
+              />
+              {/* 显示当前视口信息 */}
+              {imageIds.length > 0 && (
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: 10, 
+                  left: 10, 
+                  color: '#fff',
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  padding: '4px 8px',
+                  borderRadius: 4,
+                  fontSize: 12
+                }}>
+                  缩放: {viewport.scale.toFixed(2)}x | 
+                  窗宽: {viewport.voi.windowWidth.toFixed(0)} | 
+                  窗位: {viewport.voi.windowCenter.toFixed(0)} | 
+                  旋转: {viewport.rotation}°
+                </div>
+              )}
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
   // 更新标签页配置
   const items = [
     {
@@ -2009,8 +2494,13 @@ const PatientDiagnosisPage = () => {
     },
     {
       key: 'imaging',
-      label: '影像资料',
-      children: '影像资料内容',
+      label: (
+        <span>
+          <FileImageOutlined />
+          影像资料
+        </span>
+      ),
+      children: <ImagingTab />
     },
     {
       key: 'lab',

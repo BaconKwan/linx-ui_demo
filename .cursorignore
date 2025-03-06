@@ -1,0 +1,20 @@
+# 忽略 node_modules 文件夹
+node_modules/
+
+# 忽略所有的 .log 文件
+*.log
+
+# 忽略特定的文件夹
+dist/
+build/
+
+# 忽略特定的文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.dcm
+
+public/
