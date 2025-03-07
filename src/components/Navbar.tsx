@@ -2,7 +2,7 @@
 
 import { Layout, Menu, Button, Space, Dropdown, message } from 'antd';
 import type { MenuProps } from 'antd';
-import { BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, ProfileOutlined } from '@ant-design/icons';
+import { UserOutlined, SettingOutlined, LogoutOutlined, ProfileOutlined, BellOutlined } from '@ant-design/icons';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 

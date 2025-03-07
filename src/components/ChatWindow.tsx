@@ -36,9 +36,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const isFirstOpen = useRef(true);
   const messageListRef = useRef<HTMLDivElement>(null);
+  const isFirstOpen = useRef(true);
 
   const scrollToBottom = () => {
     if (messageListRef.current) {
@@ -266,7 +265,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <Spin size="small" />
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
       <div style={{ 
         padding: '20px',

@@ -9,12 +9,7 @@ import {
   DislikeOutlined, 
   SendOutlined, 
   FileImageOutlined, 
-  LeftOutlined, 
-  RightOutlined, 
-  PlusOutlined, 
   BranchesOutlined, 
-  HistoryOutlined, 
-  ShareAltOutlined, 
   PrinterOutlined,
   UserOutlined, 
   HeartOutlined, 
@@ -23,13 +18,10 @@ import {
   MedicineBoxOutlined,
   ScheduleOutlined,
   MessageOutlined,
-  RiseOutlined,
-  FallOutlined,
   RobotOutlined,
   ExperimentOutlined,
   ApiOutlined,
   ThunderboltOutlined,
-  NodeIndexOutlined,
   WarningOutlined,
   LineChartOutlined,
   ReadOutlined,
@@ -41,7 +33,6 @@ import {
   MedicineBoxTwoTone,
   HeartTwoTone,
   AlertTwoTone,
-  PushpinOutlined,
   LikeFilled,
   DislikeFilled,
   DragOutlined,
@@ -52,365 +43,14 @@ import {
   RetweetOutlined,
   CameraOutlined,
   UndoOutlined,
-  SearchOutlined,
-  ZoomOutOutlined,
   FileTextOutlined,
 } from '@ant-design/icons';
 import Image from 'next/image';
 import ChatWindow from '@/components/ChatWindow';
 import cornerstone from 'cornerstone-core';
+import { patientDetail, mockData, monitoringData, medicalRecordData, riskAssessmentData, Risk, AdmissionRecord, ProgressRecord, dicomStudies, labData } from '@/mocks';
 
 const { Title, Text, Paragraph } = Typography;
-
-// 模拟的患者详细信息数据
-const patientDetail = {
-  basicInfo: {
-    name: '张三',
-    age: 45,
-    gender: '男',
-    idCard: '310********1234',
-    phone: '138****5678',
-    address: '上海市浦东新区****',
-    bloodType: 'A型',
-    occupation: '工程师',
-  },
-  diseaseLabels: [
-    { name: '高血压', severity: 'warning' },
-    { name: '2型糖尿病', severity: 'error' },
-    { name: '高脂血症', severity: 'warning' },
-  ],
-  riskAssessment: {
-    cardiovascular: { level: '高危', score: 85 },
-    diabetes: { level: '中危', score: 65 },
-    complications: [
-      { name: '糖尿病肾病', risk: 'high' },
-      { name: '心血管疾病', risk: 'medium' },
-    ],
-  },
-  compliance: {
-    medicationAdherence: 85,
-    followUpRate: 90,
-    dietaryCompliance: 75,
-    exerciseAdherence: 60,
-  },
-  healthOverview: {
-    height: 175,
-    weight: 75,
-    bmi: 24.5,
-    bloodPressure: '135/85',
-    bloodSugar: '7.2',
-    habits: {
-      smoking: '已戒烟',
-      drinking: '偶尔饮酒',
-      exercise: '每周3次',
-    },
-  },
-  interventions: {
-    admissionDate: '2024-03-10',
-    medications: [
-      { name: '缬沙坦', dosage: '80mg', frequency: '每日一次' },
-      { name: '二甲双胍', dosage: '500mg', frequency: '每日两次' },
-    ],
-    respiratorySupport: '无需支持',
-    treatments: ['降压治疗', '血糖控制', '生活方式干预'],
-  },
-};
-
-// 添加新的模拟数据
-const mockData = {
-  aiReasoning: [
-    {
-      timestamp: '2024-03-20 14:30:00',
-      title: '症状分析',
-      content: '基于患者的症状和体征，初步判断为重症肺炎',
-      confidence: 0.85,
-      evidence: ['持续发热', '血氧饱和度下降', 'PCT升高'],
-      details: [
-        '患者主要症状：发热（38.5℃）、呼吸频率增快（22次/分）、血氧饱和度降低（93%）',
-        '症状持续时间：3天',
-        '症状进展：逐渐加重'
-      ]
-    },
-    {
-      timestamp: '2024-03-20 14:30:30',
-      title: '实验室检查分析',
-      content: '结合实验室检查结果，提示存在严重炎症反应',
-      confidence: 0.88,
-      evidence: ['WBC升高', 'CRP显著升高', 'PCT升高', 'D-二聚体升高'],
-      details: [
-        'WBC升高（12.5×10^9/L）提示存在炎症反应',
-        'CRP（65.8mg/L）和PCT（0.8ng/mL）显著升高提示可能存在细菌感染',
-        'D-二聚体升高（1.2mg/L）提示需要关注血栓风险'
-      ]
-    },
-    {
-      timestamp: '2024-03-20 14:31:00',
-      title: '影像学分析',
-      content: '结合影像学表现，考虑为病毒性肺炎',
-      confidence: 0.78,
-      evidence: ['双肺磨玻璃密度影', '病灶分布弥漫'],
-      details: [
-        'CT显示双肺多发磨玻璃密度影',
-        '病变呈周围分布',
-        '符合病毒性肺炎影像学特征'
-      ]
-    },
-    {
-      timestamp: '2024-03-20 14:31:30',
-      title: '病原学结果分析',
-      content: '病原学结果提示新型冠状病毒感染',
-      confidence: 0.92,
-      evidence: ['核酸检测阳性', '病原宏基因组检出新冠病毒'],
-      details: [
-        'PCR检测新冠病毒阳性',
-        '宏基因组测序显示新冠病毒reads数15680（86.5%）',
-        '合并肺炎链球菌低水平感染（reads数420，2.3%）'
-      ]
-    }
-  ],
-  
-  vitalSigns: {
-    temperature: 38.5,
-    heartRate: 95,
-    bloodPressure: '135/85',
-    respiratoryRate: 22,
-    oxygenSaturation: 93,
-    consciousness: 'Clear'
-  },
-  
-  imaging: {
-    type: 'CT',
-    date: '2024-03-20',
-    findings: [
-      '双肺多发磨玻璃密度影',
-      '双肺病变呈周围分布',
-      '未见胸腔积液',
-      '纵隔淋巴结未见明显肿大'
-    ],
-    conclusion: '病毒性肺炎表现，建议结合临床'
-  },
-  
-  labResults: {
-    abnormal: [
-      { item: 'WBC', value: '12.5', unit: '×10^9/L', reference: '4-10', status: 'high' },
-      { item: 'CRP', value: '65.8', unit: 'mg/L', reference: '0-8', status: 'high' },
-      { item: 'PCT', value: '0.8', unit: 'ng/mL', reference: '0-0.5', status: 'high' },
-      { item: 'D-dimer', value: '1.2', unit: 'mg/L', reference: '0-0.5', status: 'high' }
-    ]
-  },
-  
-  pathogenTest: {
-    method: '常规病原学检测',
-    date: '2024-03-20',
-    results: [
-      { pathogen: '新型冠状病毒', result: '阳性', method: 'PCR' }
-    ]
-  },
-  
-  metagenomics: {
-    method: '病原宏基因组测序',
-    date: '2024-03-20',
-    results: [
-      { pathogen: '新型冠状病毒', reads: 15680, percentage: '86.5%', confidence: 'high' },
-      { pathogen: '肺炎链球菌', reads: 420, percentage: '2.3%', confidence: 'low' }
-    ]
-  },
-
-  // 添加 AI 思维链和诊断内容
-  aiThinkingChain: [
-    {
-      step: 1,
-      title: '症状分析',
-      content: [
-        '患者主要症状：发热（38.5℃）、呼吸频率增快（22次/分）、血氧饱和度降低（93%）',
-        '症状持续时间：3天',
-        '症状进展：逐渐加重'
-      ]
-    },
-    {
-      step: 2,
-      title: '实验室检查分析',
-      content: [
-        'WBC升高（12.5×10^9/L）提示存在炎症反应',
-        'CRP（65.8mg/L）和PCT（0.8ng/mL）显著升高提示可能存在细菌感染',
-        'D-二聚体升高（1.2mg/L）提示需要关注血栓风险'
-      ]
-    },
-    {
-      step: 3,
-      title: '影像学分析',
-      content: [
-        'CT显示双肺多发磨玻璃密度影',
-        '病变呈周围分布',
-        '符合病毒性肺炎影像学特征'
-      ]
-    },
-    {
-      step: 4,
-      title: '病原学结果分析',
-      content: [
-        'PCR检测新冠病毒阳性',
-        '宏基因组测序显示新冠病毒reads数15680（86.5%）',
-        '合并肺炎链球菌低水平感染（reads数420，2.3%）'
-      ]
-    }
-  ],
-
-  aiDiagnosis: {
-    etiology: {
-      primary: '新型冠状病毒感染',
-      secondary: '疑似合并肺炎链球菌感染',
-      evidence: [
-        'PCR检测阳性',
-        '宏基因组测序确证',
-        '典型的影像学表现',
-        '炎症指标升高'
-      ]
-    },
-    severity: {
-      level: '重度',
-      score: 85,
-      criteria: [
-        '血氧饱和度降低（93%）',
-        '呼吸频率增快（22次/分）',
-        'PCT显著升高',
-        '影像学显示病变范围广泛'
-      ]
-    },
-    progression: {
-      trend: '进展风险高',
-      factors: [
-        '高龄（65岁）',
-        '基础疾病（高血压、糖尿病）',
-        '炎症指标持续升高',
-        '氧合指数下降'
-      ],
-      prediction: '未来48-72小时是关键观察期，需警惕进展为危重型'
-    },
-    risks: [
-      {
-        type: '呼吸衰竭',
-        probability: 'high',
-        timeWindow: '24-48小时',
-        indicators: ['血氧持续下降', '呼吸频率增快']
-      },
-      {
-        type: '血栓形成',
-        probability: 'medium',
-        timeWindow: '48-72小时',
-        indicators: ['D-二聚体升高', '活动受限']
-      },
-      {
-        type: '基础疾病加重',
-        probability: 'medium',
-        timeWindow: '72小时内',
-        indicators: ['血压波动', '血糖控制不佳']
-      }
-    ]
-  }
-};
-
-// 添加模拟的监测数据
-const monitoringData = {
-  vitalSigns: [
-    {
-      date: '2024-03-20',
-      records: [
-        { time: '08:00', temperature: 38.5, heartRate: 95, bloodPressure: '135/85', respiratoryRate: 22, oxygenSaturation: 93 },
-        { time: '12:00', temperature: 38.3, heartRate: 92, bloodPressure: '132/82', respiratoryRate: 20, oxygenSaturation: 94 },
-        { time: '16:00', temperature: 38.7, heartRate: 98, bloodPressure: '138/88', respiratoryRate: 23, oxygenSaturation: 92 },
-        { time: '20:00', temperature: 38.2, heartRate: 90, bloodPressure: '130/80', respiratoryRate: 21, oxygenSaturation: 93 },
-      ]
-    },
-    {
-      date: '2024-03-21',
-      records: [
-        { time: '08:00', temperature: 38.2, heartRate: 92, bloodPressure: '132/82', respiratoryRate: 21, oxygenSaturation: 94 },
-        { time: '12:00', temperature: 38.0, heartRate: 88, bloodPressure: '130/80', respiratoryRate: 20, oxygenSaturation: 95 },
-        { time: '16:00', temperature: 38.4, heartRate: 94, bloodPressure: '134/84', respiratoryRate: 22, oxygenSaturation: 93 },
-        { time: '20:00', temperature: 38.1, heartRate: 90, bloodPressure: '131/81', respiratoryRate: 20, oxygenSaturation: 94 },
-      ]
-    },
-    {
-      date: '2024-03-22',
-      records: [
-        { time: '08:00', temperature: 37.9, heartRate: 88, bloodPressure: '130/80', respiratoryRate: 20, oxygenSaturation: 95 },
-        { time: '12:00', temperature: 37.8, heartRate: 86, bloodPressure: '128/78', respiratoryRate: 19, oxygenSaturation: 96 },
-        { time: '16:00', temperature: 38.0, heartRate: 90, bloodPressure: '132/82', respiratoryRate: 20, oxygenSaturation: 95 },
-        { time: '20:00', temperature: 37.9, heartRate: 88, bloodPressure: '130/80', respiratoryRate: 19, oxygenSaturation: 96 },
-      ]
-    }
-  ],
-  nursingLevel: [
-    { date: '2024-03-20', level: 'III级', reason: '病情危重，需要密切监护' },
-    { date: '2024-03-21', level: 'III级', reason: '持续发热，需要严密观察' },
-    { date: '2024-03-22', level: 'II级', reason: '体温有所下降，病情趋于稳定' },
-  ],
-  medications: [
-    {
-      date: '2024-03-20',
-      items: [
-        { name: '奈玛特韦/利托那韦', time: ['08:00', '20:00'], status: 'completed' },
-        { name: '头孢曲松', time: ['10:00', '22:00'], status: 'completed' },
-        { name: '对乙酰氨基酚', time: ['14:00'], status: 'completed', note: '降温' },
-      ]
-    },
-    {
-      date: '2024-03-21',
-      items: [
-        { name: '奈玛特韦/利托那韦', time: ['08:00', '20:00'], status: 'completed' },
-        { name: '头孢曲松', time: ['10:00', '22:00'], status: 'completed' },
-      ]
-    },
-    {
-      date: '2024-03-22',
-      items: [
-        { name: '奈玛特韦/利托那韦', time: ['08:00', '20:00'], status: 'completed' },
-        { name: '头孢曲松', time: ['10:00', '22:00'], status: 'completed' },
-      ]
-    }
-  ],
-  nursingRecords: [
-    {
-      date: '2024-03-20',
-      records: [
-        { time: '08:30', content: '患者精神状态一般，发热明显，给予物理降温' },
-        { time: '12:30', content: '协助患者翻身，指导呼吸功能锻炼' },
-        { time: '16:30', content: '测量生命体征，体温仍有波动' },
-        { time: '20:30', content: '夜间睡眠欠佳，予以心理安抚' },
-      ]
-    },
-    {
-      date: '2024-03-21',
-      records: [
-        { time: '08:30', content: '患者精神状态较前改善，发热持续' },
-        { time: '12:30', content: '指导患者进行床上活动，监测血氧' },
-        { time: '16:30', content: '患者诉胸闷气促症状减轻' },
-        { time: '20:30', content: '夜间休息情况改善' },
-      ]
-    },
-    {
-      date: '2024-03-22',
-      records: [
-        { time: '08:30', content: '患者精神状态好转，体温有所下降' },
-        { time: '12:30', content: '指导患者适当活动，监测各项指标' },
-        { time: '16:30', content: '患者活动耐受良好，无不适' },
-        { time: '20:30', content: '夜间休息良好' },
-      ]
-    }
-  ],
-  healthTags: [
-    { category: '症状', tags: ['发热', '呼吸困难', '咳嗽', '乏力'] },
-    { category: '体征', tags: ['体温升高', '呼吸频率增快', '血氧饱和度降低'] },
-    { category: '并发症风险', tags: ['呼吸衰竭', '血栓形成'] },
-    { category: '注意事项', tags: ['卧床休息', '监测血氧', '防止坠床'] },
-  ],
-  warningEvents: [
-    { time: '2024-03-20 16:00', type: 'warning', content: '体温升至38.7℃，已采取降温措施' },
-    { time: '2024-03-20 18:00', type: 'error', content: '血氧饱和度降至92%，已加强氧疗' },
-    { time: '2024-03-21 10:00', type: 'warning', content: '患者出现轻度呼吸困难，已通知医生' },
-  ]
-};
 
 const PatientDiagnosisPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -711,7 +351,7 @@ const PatientDiagnosisPage = () => {
               fontSize: '14px',
               padding: '0 8px'
             }}>
-              患者为65岁男性，目前诊断为新型冠状病毒感染，疑似合并肺炎链球菌感染。主要表现为发热（38.5℃）、呼吸频率增快（22次/分）、血氧饱和度降低（93%），症状持续3天且呈进行性加重。实验室检查显示炎症指标明显升高，影像学表现为双肺多发磨玻璃密度影。病情评估为重度，存在进展为危重型的风险。基于患者年龄、基础疾病（高血压、糖尿病）、实验室指标和影像学表现，预计未来48-72小时是关键观察期。建议密切监测生命体征、血氧饱和度，警惕呼吸衰竭和血栓并发症风险，同时关注基础疾病变化。
+              {mockData.aiConclusion}
             </div>
 
             <Row gutter={[16, 16]}>
@@ -903,14 +543,15 @@ const PatientDiagnosisPage = () => {
                 title={
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Space>
-                      抗病毒治疗
+                      {mockData.aiTreatmentPlan.antiviral.guide.name}
                       <Tooltip 
                         title={
                           <div>
                             <p>参考指南：</p>
                             <ul style={{ paddingLeft: 16, margin: 0 }}>
-                              <li>《新型冠状病毒感染诊疗方案（第十版）》</li>
-                              <li>《重症新型冠状病毒感染诊治指南（第四版）》</li>
+                              {mockData.aiTreatmentPlan.antiviral.guide.references.map((ref, index) => (
+                                <li key={index}>{ref}</li>
+                              ))}
                             </ul>
                           </div>
                         }
@@ -936,11 +577,18 @@ const PatientDiagnosisPage = () => {
                 styles={{ body: { padding: '12px' } }}
               >
                 <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
-                  <li>建议使用小分子抗病毒药物，可选择：
-                    <Tag color="blue" style={{ marginLeft: 8 }}>奈玛特韦/利托那韦</Tag>
-                    <Tag color="blue">莫诺拉韦</Tag>
-                  </li>
-                  <li>用药时注意相互作用，特别是与降压、降糖药物的相互作用</li>
+                  {mockData.aiTreatmentPlan.antiviral.recommendations.content.map((item, index) => (
+                    <li key={index}>
+                      {item}
+                      {index === 0 && mockData.aiTreatmentPlan.antiviral.recommendations.drugs && (
+                        <>
+                          {mockData.aiTreatmentPlan.antiviral.recommendations.drugs.map(drug => (
+                            <Tag key={drug} color="blue" style={{ marginLeft: 8 }}>{drug}</Tag>
+                          ))}
+                        </>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </Card>
 
@@ -950,14 +598,15 @@ const PatientDiagnosisPage = () => {
                 title={
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Space>
-                      抗菌治疗
+                      {mockData.aiTreatmentPlan.antibiotic.guide.name}
                       <Tooltip 
                         title={
                           <div>
                             <p>参考指南：</p>
                             <ul style={{ paddingLeft: 16, margin: 0 }}>
-                              <li>《中国成人社区获得性肺炎诊断和治疗指南（2016年版）》</li>
-                              <li>《抗菌药物临床应用指导原则（2015年版）》</li>
+                              {mockData.aiTreatmentPlan.antibiotic.guide.references.map((ref, index) => (
+                                <li key={index}>{ref}</li>
+                              ))}
                             </ul>
                           </div>
                         }
@@ -983,11 +632,18 @@ const PatientDiagnosisPage = () => {
                 styles={{ body: { padding: '12px' } }}
               >
                 <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
-                  <li>考虑存在肺炎链球菌合并感染，建议使用：
-                    <Tag color="blue" style={{ marginLeft: 8 }}>头孢曲松</Tag>
-                    <Tag color="blue">莫西沙星</Tag>
-                  </li>
-                  <li>建议治疗疗程7-14天，根据临床反应调整</li>
+                  {mockData.aiTreatmentPlan.antibiotic.recommendations.content.map((item, index) => (
+                    <li key={index}>
+                      {item}
+                      {index === 0 && mockData.aiTreatmentPlan.antibiotic.recommendations.drugs && (
+                        <>
+                          {mockData.aiTreatmentPlan.antibiotic.recommendations.drugs.map(drug => (
+                            <Tag key={drug} color="blue" style={{ marginLeft: 8 }}>{drug}</Tag>
+                          ))}
+                        </>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </Card>
 
@@ -997,14 +653,15 @@ const PatientDiagnosisPage = () => {
                 title={
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Space>
-                      对症支持治疗
+                      {mockData.aiTreatmentPlan.supportive.guide.name}
                       <Tooltip 
                         title={
                           <div>
                             <p>参考指南：</p>
                             <ul style={{ paddingLeft: 16, margin: 0 }}>
-                              <li>《重症医学专家共识》</li>
-                              <li>《发热患者诊疗专家共识（2017版）》</li>
+                              {mockData.aiTreatmentPlan.supportive.guide.references.map((ref, index) => (
+                                <li key={index}>{ref}</li>
+                              ))}
                             </ul>
                           </div>
                         }
@@ -1030,11 +687,18 @@ const PatientDiagnosisPage = () => {
                 styles={{ body: { padding: '12px' } }}
               >
                 <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
-                  <li>氧疗：建议开始低流量氧疗（2-3L/min），根据血氧饱和度调整</li>
-                  <li>解热：体温{'>'} 38.5℃时使用对乙酰氨基酚</li>
-                  <li>化痰：建议使用
-                    <Tag color="blue" style={{ marginLeft: 8 }}>乙酰半胱氨酸</Tag>
-                  </li>
+                  {mockData.aiTreatmentPlan.supportive.recommendations.content.map((item, index) => (
+                    <li key={index}>
+                      {item}
+                      {index === 2 && mockData.aiTreatmentPlan.supportive.recommendations.drugs && (
+                        <>
+                          {mockData.aiTreatmentPlan.supportive.recommendations.drugs.map(drug => (
+                            <Tag key={drug} color="blue" style={{ marginLeft: 8 }}>{drug}</Tag>
+                          ))}
+                        </>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </Card>
 
@@ -1044,14 +708,15 @@ const PatientDiagnosisPage = () => {
                 title={
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Space>
-                      基础疾病管理
+                      {mockData.aiTreatmentPlan.management.guide.name}
                       <Tooltip 
                         title={
                           <div>
                             <p>参考指南：</p>
                             <ul style={{ paddingLeft: 16, margin: 0 }}>
-                              <li>《中国高血压防治指南（2018年修订版）》</li>
-                              <li>《中国2型糖尿病防治指南（2020年版）》</li>
+                              {mockData.aiTreatmentPlan.management.guide.references.map((ref, index) => (
+                                <li key={index}>{ref}</li>
+                              ))}
                             </ul>
                           </div>
                         }
@@ -1077,9 +742,9 @@ const PatientDiagnosisPage = () => {
                 styles={{ body: { padding: '12px' } }}
               >
                 <ul style={{ paddingLeft: 20, marginBottom: 8 }}>
-                  <li>高血压：继续使用缬沙坦，密切监测血压</li>
-                  <li>糖尿病：暂停二甲双胍，改用胰岛素控制血糖</li>
-                  <li>目标：血压{'<'}140/90mmHg，空腹血糖6-10mmol/L</li>
+                  {mockData.aiTreatmentPlan.management.recommendations.content.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </Card>
 
@@ -1089,20 +754,21 @@ const PatientDiagnosisPage = () => {
                 title={
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <Space>
-                      监测建议
+                      {mockData.aiTreatmentPlan.monitoring.guide.name}
                       <Tooltip 
                         title={
                           <div>
                             <p>参考指南：</p>
                             <ul style={{ paddingLeft: 16, margin: 0 }}>
-                              <li>《重症医学监护治疗专家共识》</li>
-                              <li>《急性呼吸窘迫综合征诊治指南（2019版）》</li>
+                              {mockData.aiTreatmentPlan.monitoring.guide.references.map((ref, index) => (
+                                <li key={index}>{ref}</li>
+                              ))}
                             </ul>
                           </div>
                         }
                       >
-                      <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
-                    </Tooltip>
+                        <ReadOutlined style={{ color: '#1890ff', cursor: 'help' }} />
+                      </Tooltip>
                     </Space>
                     <Space>
                       <Button
@@ -1125,17 +791,17 @@ const PatientDiagnosisPage = () => {
                   <Col span={12}>
                     <Title level={5}>常规监测</Title>
                     <ul style={{ paddingLeft: 20 }}>
-                      <li>生命体征：每4小时</li>
-                      <li>血气分析：每日1次</li>
-                      <li>血常规、CRP：每48小时</li>
+                      {mockData.aiTreatmentPlan.monitoring.routine.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
                     </ul>
                   </Col>
                   <Col span={12}>
                     <Title level={5}>警戒指标</Title>
                     <ul style={{ paddingLeft: 20 }}>
-                      <li>血氧饱和度 {'<'} 92%</li>
-                      <li>呼吸频率 {'>'} 30次/分</li>
-                      <li>血压 {'<'} 90/60mmHg</li>
+                      {mockData.aiTreatmentPlan.monitoring.warning.map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
                     </ul>
                   </Col>
                 </Row>
@@ -1398,76 +1064,7 @@ const PatientDiagnosisPage = () => {
 
   // 病历记录标签页组件
   const MedicalRecordTab = () => {
-    // 病历数据
-    const medicalRecords = [
-      {
-        date: '2024-03-20',
-        title: '入院记录',
-        content: {
-          mainComplaint: '发热3天，呼吸困难2天',
-          presentIllness: '患者3天前无明显诱因出现发热，最高体温38.5℃，伴有咳嗽、咳痰，痰为白色粘痰。2天前出现呼吸困难，活动后明显，休息后可缓解。同时伴有乏力、食欲下降等症状。',
-          pastHistory: '高血压病史5年，长期服用缬沙坦控制；2型糖尿病病史3年，规律服用二甲双胍治疗。',
-          physicalExam: '体温38.5℃，脉搏95次/分，呼吸22次/分，血压135/85mmHg，神志清楚，精神一般，双肺呼吸音粗，可闻及散在干湿性啰音。'
-        }
-      },
-      {
-        date: '2024-03-21',
-        title: '病程记录',
-        content: {
-          description: '患者发热持续，最高体温38.3℃，呼吸困难较前加重，血氧饱和度下降至93%。完善新冠病毒核酸检测及病原学检测，影像学检查提示双肺感染性改变。',
-          treatment: [
-            '抗病毒治疗',
-            '抗感染治疗',
-            '对症支持治疗',
-            '基础疾病用药维持'
-          ]
-        }
-      },
-      {
-        date: '2024-03-22',
-        title: '病程记录',
-        content: {
-          description: '实验室检查结果回报，提示炎症指标升高，病原学检测提示新冠病毒核酸阳性。患者体温仍有波动，呼吸困难症状持续，建议继续强化治疗。'
-        }
-      }
-    ];
-
-    // 相似病例数据
-    const similarCases = [
-      {
-        id: 'P003',
-        name: '王某',
-        age: 62,
-        gender: '男',
-        mainSymptoms: ['发热', '呼吸困难', '咳嗽'],
-        diagnosis: '新型冠状病毒感染',
-        comorbidities: ['高血压', '冠心病'],
-        similarity: 92,
-        outcome: '治愈出院',
-      },
-      {
-        id: 'P004',
-        name: '李某',
-        age: 58,
-        gender: '女',
-        mainSymptoms: ['发热', '乏力', '呼吸急促'],
-        diagnosis: '新型冠状病毒感染',
-        comorbidities: ['糖尿病'],
-        similarity: 88,
-        outcome: '好转出院',
-      },
-      {
-        id: 'P005',
-        name: '赵某',
-        age: 65,
-        gender: '男',
-        mainSymptoms: ['发热', '咳嗽', '胸闷'],
-        diagnosis: '新型冠状病毒感染',
-        comorbidities: ['高血压', '糖尿病'],
-        similarity: 85,
-        outcome: '治愈出院',
-      }
-    ];
+    const { medicalRecords, similarCases } = medicalRecordData;
 
     const SimilarCaseCard = ({ patient }: { patient: typeof similarCases[0] }) => (
       <Card
@@ -1552,28 +1149,28 @@ const PatientDiagnosisPage = () => {
                       <div style={{ marginTop: 8 }}>
                         {record.title === '入院记录' ? (
                           <>
-                            <Text>主诉：{record.content.mainComplaint}</Text>
+                            <Text>主诉：{(record.content as AdmissionRecord).mainComplaint}</Text>
                             <div style={{ margin: '8px 0' }}>
                               <Text type="secondary">现病史：</Text>
-                              <p>{record.content.presentIllness}</p>
+                              <p>{(record.content as AdmissionRecord).presentIllness}</p>
                             </div>
                             <div style={{ margin: '8px 0' }}>
                               <Text type="secondary">既往史：</Text>
-                              <p>{record.content.pastHistory}</p>
+                              <p>{(record.content as AdmissionRecord).pastHistory}</p>
                             </div>
                             <div style={{ margin: '8px 0' }}>
                               <Text type="secondary">体格检查：</Text>
-                              <p>{record.content.physicalExam}</p>
+                              <p>{(record.content as AdmissionRecord).physicalExam}</p>
                             </div>
                           </>
                         ) : (
                           <>
-                            <p>{record.content.description}</p>
-                            {record.content.treatment && (
+                            <p>{(record.content as ProgressRecord).description}</p>
+                            {(record.content as ProgressRecord).treatment && (
                               <div style={{ margin: '8px 0' }}>
                                 <Text type="secondary">治疗方案：</Text>
                                 <ul style={{ marginLeft: 24 }}>
-                                  {record.content.treatment.map((item, index) => (
+                                  {(record.content as ProgressRecord).treatment?.map((item, index) => (
                                     <li key={index}>{item}</li>
                                   ))}
                                 </ul>
@@ -1845,120 +1442,7 @@ const PatientDiagnosisPage = () => {
 
   // 风险评估标签页组件
   const RiskAssessmentTab = () => {
-    interface Risk {
-      name: string;
-      level: 'critical' | 'high' | 'medium';
-      probability: string;
-      timeWindow: string;
-      description: string;
-      indicators: string[];
-      references: string[];
-      suggestions: string[];
-    }
-
-    // 风险评估数据
-    const riskData: {
-      urgentRisks: Risk[];
-      potentialRisks: Risk[];
-    } = {
-      urgentRisks: [
-        {
-          name: '呼吸衰竭',
-          level: 'critical',
-          probability: '75%',
-          timeWindow: '24-48小时',
-          description: '患者目前存在明显的呼吸功能恶化趋势。血氧饱和度持续在93%左右波动，呼吸频率22次/分，较入院时有所增加。结合患者年龄及基础疾病情况，发生呼吸衰竭的风险很高。需要特别关注夜间血氧变化，警惕病情突然恶化。',
-          indicators: [
-            '血氧饱和度低于95%',
-            '呼吸频率增快',
-            '活动后气促明显',
-            '胸部CT显示病变范围扩大'
-          ],
-          references: [
-            '《新型冠状病毒肺炎诊疗方案（第十版）》',
-            '《重症医学监护治疗专家共识》',
-            'WHO临床管理指南2024版'
-          ],
-          suggestions: [
-            '持续血氧监测，保持吸氧充分，血氧饱和度低于93%时及时调整氧疗方案',
-            '准备无创呼吸机支持，制定呼吸支持升级预案',
-            '保持半卧位，定时翻身，必要时进行肺部物理治疗'
-          ]
-        },
-        {
-          name: '血栓并发症',
-          level: 'high',
-          probability: '60%',
-          timeWindow: '48-72小时',
-          description: '患者存在多个血栓形成的高危因素：①长期卧床活动受限；②重度炎症状态（D-二聚体1.2mg/L）；③基础疾病（高血压、糖尿病）；④高龄。这些因素显著增加了深静脉血栓和肺栓塞的风险。需要采取积极的预防措施。',
-          indicators: [
-            'D-二聚体显著升高',
-            '活动受限卧床时间延长',
-            '下肢静脉回流受阻',
-            '基础疾病导致的血液高凝状态'
-          ],
-          references: [
-            '《新型冠状病毒感染者血栓预防与管理专家共识》',
-            '《重症患者血栓预防指南2023版》',
-            'CHEST血栓预防指南更新版'
-          ],
-          suggestions: [
-            '立即启动预防性抗凝治疗，严密监测凝血功能',
-            '使用气压治疗装置，预防下肢深静脉血栓',
-            '指导患者适度活动，避免长期卧床制动'
-          ]
-        }
-      ],
-      potentialRisks: [
-        {
-          name: '基础疾病失控',
-          level: 'medium',
-          probability: '45%',
-          timeWindow: '3-7天',
-          description: '患者原有的高血压和糖尿病在当前感染应激状态下可能出现控制不佳。血压波动在135-155/85-95mmHg之间，空腹血糖波动在7-11mmol/L。炎症反应和治疗用药（如糖皮质激素）可能进一步影响血压和血糖的稳定性。',
-          indicators: [
-            '血压波动明显',
-            '血糖控制不佳',
-            '应激状态影响',
-            '治疗药物相互作用'
-          ],
-          references: [
-            '《新型冠状病毒感染合并基础疾病管理专家建议》',
-            '《糖尿病患者新冠病毒感染管理指南》',
-            '《高血压合并感染症治疗专家共识》'
-          ],
-          suggestions: [
-            '每4小时监测血压，根据波动情况及时调整降压方案',
-            '改用胰岛素控制血糖，每日监测空腹及餐后血糖',
-            '注意用药相互作用，避免加重基础疾病'
-          ]
-        },
-        {
-          name: '免疫功能紊乱',
-          level: 'medium',
-          probability: '40%',
-          timeWindow: '5-10天',
-          description: '患者存在免疫功能紊乱的风险，可能表现为过度免疫反应或免疫功能抑制。实验室检查显示炎症指标明显升高（CRP 65.8mg/L），提示存在强烈的炎症反应。需要警惕免疫功能紊乱导致的并发症，如细菌感染、真菌感染等。',
-          indicators: [
-            'CRP显著升高',
-            '淋巴细胞计数变化',
-            '炎症因子水平升高',
-            '免疫功能指标异常'
-          ],
-          references: [
-            '《重症新冠患者免疫功能监测专家共识》',
-            '《感染性疾病免疫治疗指南》',
-            '国际免疫学会治疗建议2024版'
-          ],
-          suggestions: [
-            '定期监测免疫功能指标和炎症因子水平',
-            '根据免疫状态调整治疗方案，避免过度免疫反应',
-            '警惕继发感染，必要时进行预防性治疗'
-          ]
-        }
-      ]
-    };
-
+    const riskData = riskAssessmentData;
     const RiskCard = ({ risk }: { risk: Risk }) => (
       <Card
         style={{ marginBottom: 16 }}
@@ -2051,71 +1535,6 @@ const PatientDiagnosisPage = () => {
       voi: { windowWidth: 400, windowCenter: 40 },
       rotation: 0,
     });
-
-    // DICOM 数据集
-    const dicomStudies = [
-      {
-        id: 'LUNG_CT',
-        type: 'CT',
-        date: '2024-03-20 14:30',
-        description: '肺部CT',
-        path: '/static/Lung_CT',
-        report: {
-          findings: [
-            "双肺野内见多发斑片状、结节状高密度影，边界模糊，分布不均匀",
-            "部分病灶呈磨玻璃密度改变，其中以双肺外带及胸膜下为著",
-            "双肺门及纵隔内未见明显肿大淋巴结",
-            "气管及主支气管通畅",
-            "纵隔位置居中",
-            "心影大小正常，形态规则",
-            "主动脉及其分支走形正常",
-            "双侧胸腔未见明显积液"
-          ],
-          impression: [
-            "双肺多发性炎症性病变，考虑病毒性肺炎可能",
-            "建议结合临床及实验室检查进一步明确诊断",
-            "建议短期复查观察病灶变化"
-          ],
-          hasAbnormal: true
-        },
-        series: [
-          {
-            id: 'LUNG_CT_001',
-            description: '肺部CT序列',
-            path: '/static/Lung_CT'
-          }
-        ]
-      },
-      {
-        id: 'BRAIN_CT',
-        type: 'CT',
-        date: '2024-03-21 15:45',
-        description: '脑部CT',
-        path: '/static/Brain_CT',
-        report: {
-          findings: [
-            "脑实质密度基本正常，灰白质分界清晰",
-            "脑室系统大小、形态正常，位置居中",
-            "中线结构无移位",
-            "脑池、脑沟系统未见异常",
-            "双侧基底节区未见异常密度影",
-            "颅骨完整"
-          ],
-          impression: [
-            "未见明显异常改变",
-            "建议结合临床症状进行综合评估"
-          ],
-          hasAbnormal: false
-        },
-        series: [
-          {
-            id: 'BRAIN_CT_001',
-            description: '脑部CT序列',
-            path: '/static/Brain_CT'
-          }
-        ]
-      }
-    ];
 
     // 初始化 Cornerstone
     useEffect(() => {
@@ -2368,7 +1787,7 @@ const PatientDiagnosisPage = () => {
     // 处理序列选择
     const handleSeriesSelect = (seriesId: string) => {
       setSelectedSeries(seriesId);
-      const series = dicomStudies
+      const series = dicomStudies.studies
         .flatMap(study => study.series)
         .find(s => s.id === seriesId);
       
@@ -2397,7 +1816,7 @@ const PatientDiagnosisPage = () => {
           <Col span={6}>
             <Card title="检查列表">
               <List
-                dataSource={dicomStudies}
+                dataSource={dicomStudies.studies}
                 renderItem={(study, index) => (
                   <List.Item>
                     <Card size="small" style={{ width: '100%' }}>
@@ -2468,7 +1887,7 @@ const PatientDiagnosisPage = () => {
                     <Space>
                       <FileTextOutlined />
                       <span>检查报告</span>
-                      {dicomStudies.find(study => 
+                      {dicomStudies.studies.find(study => 
                         study.series.some(s => s.id === selectedSeries)
                       )?.report.hasAbnormal && (
                         <Tag color="error">异常</Tag>
@@ -2476,7 +1895,7 @@ const PatientDiagnosisPage = () => {
                     </Space>
                   }
                 >
-                  {dicomStudies.map(study => (
+                  {dicomStudies.studies.map(study => (
                     study.series.some(s => s.id === selectedSeries) && (
                       <Row key={study.id} gutter={16}>
                         <Col span={12}>
@@ -2640,377 +2059,13 @@ const PatientDiagnosisPage = () => {
     const { Text } = Typography;
     
     // 定义检验分类
-    const categories = [
-      { id: 'routine', name: '常规检验' },
-      { id: 'biochemistry', name: '生化检验' },
-      { id: 'microbiology', name: '微生物检验' },
-      { id: 'molecular', name: '分子诊断' },
-      { id: 'immunology', name: '免疫学检验' },
-    ];
+    const categories = labData.categories;
     
     // 模拟检验数据
-    const labTests = [
-      {
-        id: 'CBC001',
-        name: '血常规 (CBC)',
-        category: 'routine',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:30',
-        status: 'completed',
-        abnormal: true,
-        urgent: true,
-        doctor: '李医生'
-      },
-      {
-        id: 'BMP001',
-        name: '血液生化全套',
-        category: 'biochemistry',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45',
-        status: 'completed',
-        abnormal: true,
-        urgent: false,
-        doctor: '王医生'
-      },
-      {
-        id: 'BCP001',
-        name: '血培养',
-        category: 'microbiology',
-        date: '2024-03-18 08:30',
-        reportTime: '2024-03-20 14:20',
-        status: 'completed',
-        abnormal: true,
-        urgent: true,
-        doctor: '张医生'
-      },
-      {
-        id: 'ABG001',
-        name: '血气分析',
-        category: 'routine',
-        date: '2024-03-18 09:45',
-        reportTime: '2024-03-18 10:15',
-        status: 'completed',
-        abnormal: true,
-        urgent: true,
-        doctor: '李医生'
-      },
-      {
-        id: 'LFT001',
-        name: '肝功能检测',
-        category: 'biochemistry',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45',
-        status: 'completed',
-        abnormal: false,
-        urgent: false,
-        doctor: '王医生'
-      },
-      {
-        id: 'KFT001',
-        name: '肾功能检测',
-        category: 'biochemistry',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45',
-        status: 'completed',
-        abnormal: false,
-        urgent: false,
-        doctor: '王医生'
-      },
-      {
-        id: 'PCR001',
-        name: '病原体核酸检测',
-        category: 'molecular',
-        date: '2024-03-17 16:20',
-        reportTime: '2024-03-18 09:30',
-        status: 'completed',
-        abnormal: false,
-        urgent: true,
-        doctor: '赵医生'
-      },
-      {
-        id: 'MGS001',
-        name: '病原宏基因组检测',
-        category: 'molecular',
-        date: '2024-03-17 16:20',
-        reportTime: '2024-03-18 15:30',
-        status: 'completed',
-        abnormal: true,
-        urgent: true,
-        doctor: '赵医生'
-      },
-      {
-        id: 'CRP001',
-        name: 'C反应蛋白',
-        category: 'immunology',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:45',
-        status: 'completed',
-        abnormal: true,
-        urgent: false,
-        doctor: '王医生'
-      },
-      {
-        id: 'PCT001',
-        name: '降钙素原',
-        category: 'immunology',
-        date: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:45',
-        status: 'completed',
-        abnormal: true,
-        urgent: false,
-        doctor: '王医生'
-      }
-    ];
-
+    const labTests = labData.labTests;
+    
     // 模拟检验结果数据
-    const testResults = {
-      'CBC001': {
-        items: [
-          { name: '白细胞计数 (WBC)', value: '15.6', unit: '×10⁹/L', reference: '4.0-10.0', abnormal: true, trend: 'up' },
-          { name: '中性粒细胞比例 (NEU%)', value: '85.2', unit: '%', reference: '50-70', abnormal: true, trend: 'up' },
-          { name: '淋巴细胞比例 (LYM%)', value: '10.5', unit: '%', reference: '20-40', abnormal: true, trend: 'down' },
-          { name: '单核细胞比例 (MONO%)', value: '5.2', unit: '%', reference: '3-8', abnormal: false, trend: 'normal' },
-          { name: '嗜酸性粒细胞比例 (EOS%)', value: '0.8', unit: '%', reference: '0.5-5', abnormal: false, trend: 'normal' },
-          { name: '红细胞计数 (RBC)', value: '4.78', unit: '×10¹²/L', reference: '4.0-5.5', abnormal: false, trend: 'normal' },
-          { name: '血红蛋白 (HGB)', value: '135', unit: 'g/L', reference: '130-175', abnormal: false, trend: 'normal' },
-          { name: '红细胞压积 (HCT)', value: '0.42', unit: 'L/L', reference: '0.4-0.5', abnormal: false, trend: 'normal' },
-          { name: '平均红细胞体积 (MCV)', value: '88', unit: 'fL', reference: '80-100', abnormal: false, trend: 'normal' },
-          { name: '平均红细胞血红蛋白含量 (MCH)', value: '28.2', unit: 'pg', reference: '27-34', abnormal: false, trend: 'normal' },
-          { name: '平均红细胞血红蛋白浓度 (MCHC)', value: '321', unit: 'g/L', reference: '320-360', abnormal: false, trend: 'normal' },
-          { name: '血小板计数 (PLT)', value: '223', unit: '×10⁹/L', reference: '100-300', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '白细胞及中性粒细胞比例升高，淋巴细胞比例下降，符合细菌感染表现。',
-        criticalValues: ['白细胞计数 (WBC)'],
-        doctor: '李医生',
-        reviewDoctor: '陈主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:30'
-      },
-      'BMP001': {
-        items: [
-          { name: '钠 (Na+)', value: '138', unit: 'mmol/L', reference: '135-145', abnormal: false, trend: 'normal' },
-          { name: '钾 (K+)', value: '3.6', unit: 'mmol/L', reference: '3.5-5.5', abnormal: false, trend: 'normal' },
-          { name: '氯 (Cl-)', value: '102', unit: 'mmol/L', reference: '96-106', abnormal: false, trend: 'normal' },
-          { name: '碳酸氢盐 (HCO3-)', value: '22', unit: 'mmol/L', reference: '22-29', abnormal: false, trend: 'normal' },
-          { name: '葡萄糖 (GLU)', value: '8.5', unit: 'mmol/L', reference: '3.9-6.1', abnormal: true, trend: 'up' },
-          { name: '尿素氮 (BUN)', value: '7.5', unit: 'mmol/L', reference: '3.2-7.1', abnormal: true, trend: 'up' },
-          { name: '肌酐 (Cr)', value: '98', unit: 'μmol/L', reference: '57-97', abnormal: true, trend: 'up' },
-          { name: '尿酸 (UA)', value: '358', unit: 'μmol/L', reference: '208-428', abnormal: false, trend: 'normal' },
-          { name: '总蛋白 (TP)', value: '68', unit: 'g/L', reference: '60-80', abnormal: false, trend: 'normal' },
-          { name: '白蛋白 (ALB)', value: '38', unit: 'g/L', reference: '35-55', abnormal: false, trend: 'normal' },
-          { name: '总胆红素 (TBIL)', value: '15.2', unit: 'μmol/L', reference: '5.1-17.0', abnormal: false, trend: 'normal' },
-          { name: '钙 (Ca)', value: '2.25', unit: 'mmol/L', reference: '2.0-2.6', abnormal: false, trend: 'normal' },
-          { name: '磷 (P)', value: '1.12', unit: 'mmol/L', reference: '0.81-1.45', abnormal: false, trend: 'normal' },
-          { name: '镁 (Mg)', value: '0.88', unit: 'mmol/L', reference: '0.66-1.07', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '血糖、尿素氮和肌酐轻度升高，建议监测肾功能，并控制血糖。',
-        criticalValues: [],
-        doctor: '王医生',
-        reviewDoctor: '刘主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45'
-      },
-      'BCP001': {
-        items: [
-          { name: '血培养结果', value: '阳性', unit: '', reference: '阴性', abnormal: true, trend: 'up' },
-          { name: '分离菌种', value: '肺炎链球菌', unit: '', reference: '', abnormal: true, trend: 'up' },
-          { name: '药敏结果 - 青霉素', value: '敏感 (S)', unit: '', reference: '', abnormal: false, trend: 'normal' },
-          { name: '药敏结果 - 阿莫西林', value: '敏感 (S)', unit: '', reference: '', abnormal: false, trend: 'normal' },
-          { name: '药敏结果 - 头孢曲松', value: '敏感 (S)', unit: '', reference: '', abnormal: false, trend: 'normal' },
-          { name: '药敏结果 - 红霉素', value: '耐药 (R)', unit: '', reference: '', abnormal: true, trend: 'up' },
-          { name: '药敏结果 - 克林霉素', value: '耐药 (R)', unit: '', reference: '', abnormal: true, trend: 'up' },
-          { name: '药敏结果 - 左氧氟沙星', value: '敏感 (S)', unit: '', reference: '', abnormal: false, trend: 'normal' },
-          { name: '药敏结果 - 万古霉素', value: '敏感 (S)', unit: '', reference: '', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '血培养分离出肺炎链球菌，对青霉素类和头孢菌素类抗生素敏感，对大环内酯类抗生素耐药。建议使用青霉素或头孢曲松治疗。',
-        criticalValues: ['血培养结果'],
-        doctor: '张医生',
-        reviewDoctor: '吴主任',
-        samplingTime: '2024-03-18 08:30',
-        reportTime: '2024-03-20 14:20'
-      },
-      'ABG001': {
-        items: [
-          { name: 'pH值', value: '7.35', unit: '', reference: '7.35-7.45', abnormal: false, trend: 'normal' },
-          { name: 'PaO2', value: '75', unit: 'mmHg', reference: '80-100', abnormal: true, trend: 'down' },
-          { name: 'PaCO2', value: '42', unit: 'mmHg', reference: '35-45', abnormal: false, trend: 'normal' },
-          { name: 'HCO3-', value: '24', unit: 'mmol/L', reference: '22-26', abnormal: false, trend: 'normal' },
-          { name: 'BE', value: '-1.5', unit: 'mmol/L', reference: '-3.0-3.0', abnormal: false, trend: 'normal' },
-          { name: 'SaO2', value: '92', unit: '%', reference: '95-100', abnormal: true, trend: 'down' },
-          { name: '乳酸', value: '1.8', unit: 'mmol/L', reference: '0.5-2.2', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '轻度低氧血症，氧合功能轻度下降，无酸碱平衡紊乱。',
-        criticalValues: ['PaO2', 'SaO2'],
-        doctor: '李医生',
-        reviewDoctor: '陈主任',
-        samplingTime: '2024-03-18 09:45',
-        reportTime: '2024-03-18 10:15'
-      },
-      'PCR001': {
-        items: [
-          { name: '新冠病毒 (SARS-CoV-2) 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' },
-          { name: '流感病毒A型 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' },
-          { name: '流感病毒B型 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' },
-          { name: '呼吸道合胞病毒 (RSV) 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' },
-          { name: '腺病毒 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' },
-          { name: '肺炎支原体 核酸', value: '阴性', unit: '', reference: '阴性', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '未检测到常见呼吸道病原体核酸。',
-        criticalValues: [],
-        doctor: '赵医生',
-        reviewDoctor: '杨主任',
-        samplingTime: '2024-03-17 16:20',
-        reportTime: '2024-03-18 09:30'
-      },
-      'LFT001': {
-        items: [
-          { name: '总蛋白 (TP)', value: '68', unit: 'g/L', reference: '60-80', abnormal: false, trend: 'normal' },
-          { name: '白蛋白 (ALB)', value: '38', unit: 'g/L', reference: '35-55', abnormal: false, trend: 'normal' },
-          { name: '球蛋白 (GLB)', value: '30', unit: 'g/L', reference: '20-35', abnormal: false, trend: 'normal' },
-          { name: '白蛋白/球蛋白比值 (A/G)', value: '1.27', unit: '', reference: '1.2-2.4', abnormal: false, trend: 'normal' },
-          { name: '总胆红素 (TBIL)', value: '15.2', unit: 'μmol/L', reference: '5.1-17.0', abnormal: false, trend: 'normal' },
-          { name: '直接胆红素 (DBIL)', value: '3.5', unit: 'μmol/L', reference: '0-6.8', abnormal: false, trend: 'normal' },
-          { name: '间接胆红素 (IBIL)', value: '11.7', unit: 'μmol/L', reference: '5.1-12.0', abnormal: false, trend: 'normal' },
-          { name: '谷丙转氨酶 (ALT)', value: '25', unit: 'U/L', reference: '0-40', abnormal: false, trend: 'normal' },
-          { name: '谷草转氨酶 (AST)', value: '28', unit: 'U/L', reference: '0-40', abnormal: false, trend: 'normal' },
-          { name: '碱性磷酸酶 (ALP)', value: '78', unit: 'U/L', reference: '40-150', abnormal: false, trend: 'normal' },
-          { name: 'γ-谷氨酰转肽酶 (GGT)', value: '32', unit: 'U/L', reference: '0-50', abnormal: false, trend: 'normal' }
-        ],
-        conclusion: '肝功能指标均在正常范围内，未见异常。',
-        criticalValues: [],
-        doctor: '王医生',
-        reviewDoctor: '刘主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45'
-      },
-      'KFT001': {
-        items: [
-          { name: '尿素氮 (BUN)', value: '7.5', unit: 'mmol/L', reference: '3.2-7.1', abnormal: true, trend: 'up' },
-          { name: '肌酐 (Cr)', value: '98', unit: 'μmol/L', reference: '57-97', abnormal: true, trend: 'up' },
-          { name: '尿酸 (UA)', value: '358', unit: 'μmol/L', reference: '208-428', abnormal: false, trend: 'normal' },
-          { name: '胱抑素C (Cys-C)', value: '1.2', unit: 'mg/L', reference: '0.51-1.09', abnormal: true, trend: 'up' },
-          { name: '估算肾小球滤过率 (eGFR)', value: '75', unit: 'mL/min/1.73m²', reference: '>90', abnormal: true, trend: 'down' }
-        ],
-        conclusion: '肾功能指标轻度异常，尿素氮和肌酐轻度升高，eGFR轻度下降，提示轻度肾功能损伤。',
-        criticalValues: [],
-        doctor: '王医生',
-        reviewDoctor: '刘主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 11:45'
-      },
-      'CRP001': {
-        items: [
-          { name: 'C反应蛋白 (CRP)', value: '85', unit: 'mg/L', reference: '0-8', abnormal: true, trend: 'up' }
-        ],
-        conclusion: 'C反应蛋白显著升高，提示机体存在明显炎症反应。',
-        criticalValues: ['C反应蛋白 (CRP)'],
-        doctor: '王医生',
-        reviewDoctor: '刘主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:45'
-      },
-      'PCT001': {
-        items: [
-          { name: '降钙素原 (PCT)', value: '2.3', unit: 'ng/mL', reference: '<0.5', abnormal: true, trend: 'up' }
-        ],
-        conclusion: '降钙素原显著升高，高度提示细菌感染，特别是系统性感染。',
-        criticalValues: ['降钙素原 (PCT)'],
-        doctor: '王医生',
-        reviewDoctor: '刘主任',
-        samplingTime: '2024-03-18 08:15',
-        reportTime: '2024-03-18 10:45'
-      },
-      'MGS001': {
-        items: [
-          { 
-            name: '总序列数据量', 
-            value: '12.5', 
-            unit: 'M reads', 
-            reference: '>10M', 
-            abnormal: false, 
-            trend: 'normal' 
-          },
-          { 
-            name: '病毒 - 新型冠状病毒', 
-            value: '15,680', 
-            unit: 'reads', 
-            reference: '<100', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '细菌 - 肺炎链球菌', 
-            value: '420', 
-            unit: 'reads', 
-            reference: '<100', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '细菌 - 流感嗜血杆菌', 
-            value: '285', 
-            unit: 'reads', 
-            reference: '<100', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '细菌 - 肺炎克雷伯菌', 
-            value: '156', 
-            unit: 'reads', 
-            reference: '<100', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '耐药基因 - β内酰胺类', 
-            value: '检出 (168 reads)', 
-            unit: '', 
-            reference: '<50 reads', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '耐药基因 - 大环内酯类', 
-            value: '检出 (142 reads)', 
-            unit: '', 
-            reference: '<50 reads', 
-            abnormal: true, 
-            trend: 'up' 
-          },
-          { 
-            name: '耐药基因 - 氨基糖苷类', 
-            value: '35 reads', 
-            unit: '', 
-            reference: '<50 reads', 
-            abnormal: false, 
-            trend: 'normal' 
-          },
-          { 
-            name: '其他病毒序列', 
-            value: '未检出', 
-            unit: '', 
-            reference: '<100 reads', 
-            abnormal: false, 
-            trend: 'normal' 
-          },
-          { 
-            name: '真菌序列', 
-            value: '45', 
-            unit: 'reads', 
-            reference: '<100', 
-            abnormal: false, 
-            trend: 'normal' 
-          }
-        ],
-        conclusion: '检出新型冠状病毒（15,680 reads）提示存在活动性感染，同时检出多种致病菌，包括肺炎链球菌（420 reads）、流感嗜血杆菌（285 reads）和肺炎克雷伯菌（156 reads），提示存在细菌合并感染。检出β内酰胺类和大环内酯类耐药基因，提示可能存在相关抗生素耐药性。建议根据耐药基因检测结果，调整抗生素使用方案，并进行抗病毒治疗。',
-        criticalValues: ['病毒 - 新型冠状病毒', '细菌 - 肺炎链球菌', '耐药基因 - β内酰胺类'],
-        doctor: '赵医生',
-        reviewDoctor: '杨主任',
-        samplingTime: '2024-03-17 16:20',
-        reportTime: '2024-03-18 15:30'
-      }
-    };
+    const testResults = labData.testResults;
 
     // 根据分类获取检验列表
     const getTestsByCategory = (categoryId: string | null) => {
@@ -3022,7 +2077,7 @@ const PatientDiagnosisPage = () => {
     useEffect(() => {
       if (labTests.length > 0 && !selectedTest) {
         setSelectedTest(labTests[0].id);
-        setCurrentCategory(labTests[0].category);
+        setCurrentCategory(null);
       }
     }, []);
 
@@ -3142,15 +2197,26 @@ const PatientDiagnosisPage = () => {
             body: { padding: '16px' }
           }}
           title={
-            <Space>
-              检验结果详情
-              {selectedTest && labTests.find(t => t.id === selectedTest)?.abnormal && 
-                <Tag color="red">异常</Tag>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <Space>
+                检验结果详情
+                {selectedTest && labTests.find(t => t.id === selectedTest)?.abnormal && 
+                  <Tag color="red">异常</Tag>
+                }
+                {selectedTest && labTests.find(t => t.id === selectedTest)?.urgent && 
+                  <Tag color="red">急诊</Tag>
+                }
+              </Space>
+              {selectedTest && 
+                <Button 
+                  type="text" 
+                  icon={<PrinterOutlined />} 
+                  size="small"
+                >
+                  打印报告
+                </Button>
               }
-              {selectedTest && labTests.find(t => t.id === selectedTest)?.urgent && 
-                <Tag color="red">急诊</Tag>
-              }
-            </Space>
+            </div>
           }
         >
           {selectedTest && testResults[selectedTest as keyof typeof testResults] ? (
@@ -3235,11 +2301,6 @@ const PatientDiagnosisPage = () => {
                 type="info"
                 showIcon
               />
-
-              {/* 添加操作按钮 */}
-              <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button icon={<PrinterOutlined />}>打印报告</Button>
-              </div>
             </>
           ) : (
             <Empty description="暂无检验结果" />
