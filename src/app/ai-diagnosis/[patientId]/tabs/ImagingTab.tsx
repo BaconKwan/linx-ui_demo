@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Card, 
   Typography, 
@@ -37,12 +37,47 @@ const ImagingTab: React.FC = () => {
   const [selectedSeries, setSelectedSeries] = useState<string | null>(null);
   const [imageIds, setImageIds] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentStudy, setCurrentStudy] = useState<any>(null);
   const [viewport, setViewport] = useState({
     scale: 1,
     translation: { x: 0, y: 0 },
     voi: { windowWidth: 400, windowCenter: 40 },
     rotation: 0,
   });
+
+  // 处理序列选择
+  const handleSeriesSelect = (seriesId: string) => {
+    setSelectedSeries(seriesId);
+    const series = dicomStudies.studies
+      .flatMap(study => study.series)
+      .find(s => s.id === seriesId);
+    
+    if (series) {
+      // 更新当前检查
+      const study = dicomStudies.studies.find(study => 
+        study.series.some(s => s.id === seriesId)
+      );
+      if (study) {
+        setCurrentStudy(study);
+      }
+      
+      loadDicomSeries(series.path);
+    }
+  };
+
+  // 初始化时自动选择第一个序列和检查
+  useEffect(() => {
+    // 如果还没有设置当前检查，并且有可用的检查，则设置第一个检查为当前检查
+    if (!currentStudy && dicomStudies.studies.length > 0) {
+      setCurrentStudy(dicomStudies.studies[0]);
+    }
+    
+    // 如果还没有选择序列，并且有可用的序列，则选择第一个序列
+    if (!selectedSeries && dicomStudies.studies.length > 0 && dicomStudies.studies[0].series.length > 0) {
+      const firstSeries = dicomStudies.studies[0].series[0];
+      handleSeriesSelect(firstSeries.id);
+    }
+  }, []);
 
   // 初始化 Cornerstone
   useEffect(() => {
@@ -66,20 +101,27 @@ const ImagingTab: React.FC = () => {
           import('dicom-parser'),
           import('hammerjs')
         ]);
-        
+         
         const element = viewerRef.current;
         if (!element) return;
-        
+         
         cs.default.enable(element);
-        
+         
         csWadoImageLoader.default.external.cornerstone = cs.default;
         csWadoImageLoader.default.external.dicomParser = dicomParser.default;
+        
+        // 配置 WADO 图像加载器
         csWadoImageLoader.default.configure({
           beforeSend: (xhr: XMLHttpRequest) => {
             xhr.responseType = 'arraybuffer';
           }
         });
-
+        
+        // 显式注册 wadouri 图像加载器
+        const wadoUriLoader = (csWadoImageLoader.default as any).wadouri.fileManager;
+        const wadoLoader = (csWadoImageLoader.default as any).wadouri;
+        wadoLoader.register(cs.default);
+ 
         csTools.default.external.cornerstone = cs.default;
         csTools.default.external.Hammer = Hammer.default;
         csTools.default.init({
@@ -99,8 +141,7 @@ const ImagingTab: React.FC = () => {
         csTools.default.addTool(csTools.default.StackScrollTool);
 
         // 设置默认工具
-        csTools.default.setToolActive('Pan', { mouseButtonMask: 1 });
-        csTools.default.setToolActive('Zoom', { mouseButtonMask: 2 });
+        csTools.default.setToolActive('Wwwc', { mouseButtonMask: 1 });
 
         // 添加事件监听器
         element.addEventListener('cornerstoneimagerendered', (evt: Event) => {
@@ -242,11 +283,23 @@ const ImagingTab: React.FC = () => {
         throw new Error('影像查看器未初始化');
       }
 
-      const cs = await import('cornerstone-core');
-      const image = await cs.default.loadAndCacheImage(newImageIds[0]);
-      cs.default.displayImage(viewerRef.current, image);
-      
-      message.success(`成功加载 ${newImageIds.length} 张影像`);
+      try {
+        const cs = await import('cornerstone-core');
+        console.log('Loading image:', newImageIds[0]); // 调试日志
+        const image = await cs.default.loadAndCacheImage(newImageIds[0]);
+        cs.default.displayImage(viewerRef.current, image);
+        
+        message.success(`成功加载 ${newImageIds.length} 张影像`);
+      } catch (loadError: any) {
+        console.error('Image loading error:', loadError);
+        
+        // 检查是否是图像加载器错误
+        if (loadError.toString().includes('no image loader for imageId')) {
+          message.error('图像加载器配置错误，请检查 wadouri 协议配置');
+        } else {
+          message.error('加载图像失败: ' + loadError.toString());
+        }
+      }
     } catch (error) {
       console.error('Failed to load DICOM series:', error);
       message.error(error instanceof Error ? error.message : '加载影像数据失败');
@@ -292,18 +345,6 @@ const ImagingTab: React.FC = () => {
     }
   };
 
-  // 处理序列选择
-  const handleSeriesSelect = (seriesId: string) => {
-    setSelectedSeries(seriesId);
-    const series = dicomStudies.studies
-      .flatMap(study => study.series)
-      .find(s => s.id === seriesId);
-    
-    if (series) {
-      loadDicomSeries(series.path);
-    }
-  };
-
   // 处理图像切换
   const handleImageScroll = async (delta: number) => {
     if (imageIds.length === 0) return;
@@ -315,6 +356,54 @@ const ImagingTab: React.FC = () => {
       const image = await cs.default.loadAndCacheImage(imageIds[newIndex]);
       cs.default.displayImage(viewerRef.current, image);
     }
+  };
+
+  // 创建可重用的检查报告组件
+  const ReportPanel: React.FC<{study: any}> = ({ study }) => {
+    if (!study) return null;
+
+    return (
+      <Row key={study.id} gutter={16}>
+        <Col span={12}>
+          <div style={{ 
+            backgroundColor: '#fafafa', 
+            padding: '16px', 
+            borderRadius: '8px',
+            height: '100%'
+          }}>
+            <Title level={5}>检查所见</Title>
+            <List
+              size="small"
+              dataSource={study.report.findings}
+              renderItem={(item: string, index: number) => (
+                <List.Item style={{ padding: '4px 0' }}>
+                  <Text>{index + 1}. {item}</Text>
+                </List.Item>
+              )}
+            />
+          </div>
+        </Col>
+        <Col span={12}>
+          <div style={{ 
+            backgroundColor: '#fafafa', 
+            padding: '16px', 
+            borderRadius: '8px',
+            height: '100%'
+          }}>
+            <Title level={5}>印象</Title>
+            <List
+              size="small"
+              dataSource={study.report.impression}
+              renderItem={(item: string, index: number) => (
+                <List.Item style={{ padding: '4px 0' }}>
+                  <Text strong>{index + 1}. {item}</Text>
+                </List.Item>
+              )}
+            />
+          </div>
+        </Col>
+      </Row>
+    );
   };
 
   return (
@@ -388,67 +477,21 @@ const ImagingTab: React.FC = () => {
         {/* 右侧影像查看器和报告 */}
         <Col span={18}>
           <Space direction="vertical" style={{ width: '100%' }} size={16}>
-            {/* 检查报告 */}
-            {selectedSeries && (
-              <Card
-                title={
-                  <Space>
-                    <FileTextOutlined />
-                    <span>检查报告</span>
-                    {dicomStudies.studies.find(study => 
-                      study.series.some(s => s.id === selectedSeries)
-                    )?.report.hasAbnormal && (
-                      <Tag color="error">异常</Tag>
-                    )}
-                  </Space>
-                }
-              >
-                {dicomStudies.studies.map(study => (
-                  study.series.some(s => s.id === selectedSeries) && (
-                    <Row key={study.id} gutter={16}>
-                      <Col span={12}>
-                        <div style={{ 
-                          backgroundColor: '#fafafa', 
-                          padding: '16px', 
-                          borderRadius: '8px',
-                          height: '100%'
-                        }}>
-                          <Title level={5}>检查所见</Title>
-                          <List
-                            size="small"
-                            dataSource={study.report.findings}
-                            renderItem={(item, index) => (
-                              <List.Item style={{ padding: '4px 0' }}>
-                                <Text>{index + 1}. {item}</Text>
-                              </List.Item>
-                            )}
-                          />
-                        </div>
-                      </Col>
-                      <Col span={12}>
-                        <div style={{ 
-                          backgroundColor: '#fafafa', 
-                          padding: '16px', 
-                          borderRadius: '8px',
-                          height: '100%'
-                        }}>
-                          <Title level={5}>印象</Title>
-                          <List
-                            size="small"
-                            dataSource={study.report.impression}
-                            renderItem={(item, index) => (
-                              <List.Item style={{ padding: '4px 0' }}>
-                                <Text strong>{index + 1}. {item}</Text>
-                              </List.Item>
-                            )}
-                          />
-                        </div>
-                      </Col>
-                    </Row>
-                  )
-                ))}
-              </Card>
-            )}
+            {/* 检查报告 - 始终显示当前选中的检查报告 */}
+            <Card
+              title={
+                <Space>
+                  <FileTextOutlined />
+                  <span>检查报告</span>
+                  {currentStudy?.report.hasAbnormal && (
+                    <Tag color="error">异常</Tag>
+                  )}
+                </Space>
+              }
+              style={{ marginBottom: 16 }}
+            >
+              <ReportPanel study={currentStudy} />
+            </Card>
 
             {/* 影像查看器 */}
             <Card
