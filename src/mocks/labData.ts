@@ -1,4 +1,4 @@
-import { LabData } from './types';
+import { LabData } from '@/types/mock';
 
 export const labData: LabData = {
   categories: [

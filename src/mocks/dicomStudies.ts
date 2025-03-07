@@ -1,4 +1,4 @@
-import { DicomStudies } from './types';
+import { DicomStudies } from '@/types/mock';
 
 export const dicomStudies: DicomStudies = {
   studies: [

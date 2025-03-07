@@ -1,4 +1,3 @@
-export * from './types';
 export * from './patientDetail';
 export * from './mockData';
 export * from './monitoringData';

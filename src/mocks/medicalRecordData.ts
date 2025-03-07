@@ -1,4 +1,4 @@
-import { MedicalRecordData } from './types';
+import { MedicalRecordData } from '@/types/mock';
 
 export const medicalRecordData: MedicalRecordData = {
   medicalRecords: [

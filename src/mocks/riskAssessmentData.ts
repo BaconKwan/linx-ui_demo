@@ -1,4 +1,4 @@
-import { RiskAssessmentData } from './types';
+import { RiskAssessmentData } from '@/types/mock';
 
 export const riskAssessmentData: RiskAssessmentData = {
   urgentRisks: [
@@ -7,94 +7,93 @@ export const riskAssessmentData: RiskAssessmentData = {
       level: 'critical',
       probability: '75%',
       timeWindow: '24-48小时',
-      description: '基于患者目前的血氧饱和度和呼吸频率，存在发展为呼吸衰竭的高风险',
+      description: '患者目前存在明显的呼吸功能恶化趋势。血氧饱和度持续在93%左右波动，呼吸频率22次/分，较入院时有所增加。结合患者年龄及基础疾病情况，发生呼吸衰竭的风险很高。需要特别关注夜间血氧变化，警惕病情突然恶化。',
       indicators: [
-        '血氧饱和度持续下降',
+        '血氧饱和度低于95%',
         '呼吸频率增快',
-        '呼吸困难加重',
-        '血气分析指标恶化'
+        '活动后气促明显',
+        '胸部CT显示病变范围扩大'
       ],
       references: [
-        'Blood oxygen saturation < 93%',
-        'Respiratory rate > 30/min',
-        'Oxygenation index < 300'
+        '《新型冠状病毒肺炎诊疗方案（第十版）》',
+        '《重症医学监护治疗专家共识》',
+        'WHO临床管理指南2024版'
       ],
       suggestions: [
-        '加强氧疗支持',
-        '密切监测血氧饱和度',
-        '准备无创呼吸机支持',
-        '及时调整治疗方案'
+        '持续血氧监测，保持吸氧充分，血氧饱和度低于93%时及时调整氧疗方案',
+        '准备无创呼吸机支持，制定呼吸支持升级预案',
+        '保持半卧位，定时翻身，必要时进行肺部物理治疗'
       ]
     },
     {
-      name: '急性呼吸窘迫综合征',
+      name: '血栓并发症',
       level: 'high',
       probability: '60%',
       timeWindow: '48-72小时',
-      description: '患者存在发展为ARDS的风险，需要密切监测和预防',
+      description: '患者存在多个血栓形成的高危因素：①长期卧床活动受限；②重度炎症状态（D-二聚体1.2mg/L）；③基础疾病（高血压、糖尿病）；④高龄。这些因素显著增加了深静脉血栓和肺栓塞的风险。需要采取积极的预防措施。',
       indicators: [
-        '氧合指数持续下降',
-        '双肺浸润影扩大',
-        '呼吸功能持续恶化'
+        'D-二聚体显著升高',
+        '活动受限卧床时间延长',
+        '下肢静脉回流受阻',
+        '基础疾病导致的血液高凝状态'
       ],
       references: [
-        'Berlin definition of ARDS',
-        'Chest imaging deterioration',
-        'Progressive hypoxemia'
+        '《新型冠状病毒感染者血栓预防与管理专家共识》',
+        '《重症患者血栓预防指南2023版》',
+        'CHEST血栓预防指南更新版'
       ],
       suggestions: [
-        '严格限制液体入量',
-        '保护性通气策略',
-        '防止医源性损伤',
-        '监测肺部影像变化'
+        '立即启动预防性抗凝治疗，严密监测凝血功能',
+        '使用气压治疗装置，预防下肢深静脉血栓',
+        '指导患者适度活动，避免长期卧床制动'
       ]
     }
   ],
   potentialRisks: [
     {
-      name: '血栓并发症',
+      name: '基础疾病失控',
       level: 'medium',
       probability: '45%',
       timeWindow: '3-7天',
-      description: '由于长期卧床和炎症状态，存在发生血栓并发症的风险',
+      description: '患者原有的高血压和糖尿病在当前感染应激状态下可能出现控制不佳。血压波动在135-155/85-95mmHg之间，空腹血糖波动在7-11mmol/L。炎症反应和治疗用药（如糖皮质激素）可能进一步影响血压和血糖的稳定性。',
       indicators: [
-        'D-二聚体升高',
-        '活动受限',
-        '凝血功能异常'
+        '血压波动明显',
+        '血糖控制不佳',
+        '应激状态影响',
+        '治疗药物相互作用'
       ],
       references: [
-        'D-dimer elevation',
-        'Prolonged immobilization',
-        'Hypercoagulable state'
+        '《新型冠状病毒感染合并基础疾病管理专家建议》',
+        '《糖尿病患者新冠病毒感染管理指南》',
+        '《高血压合并感染症治疗专家共识》'
       ],
       suggestions: [
-        '预防性抗凝治疗',
-        '早期活动干预',
-        '弹力袜预防',
-        '定期监测凝血指标'
+        '每4小时监测血压，根据波动情况及时调整降压方案',
+        '改用胰岛素控制血糖，每日监测空腹及餐后血糖',
+        '注意用药相互作用，避免加重基础疾病'
       ]
     },
     {
-      name: '继发感染',
+      name: '免疫功能紊乱',
       level: 'medium',
       probability: '40%',
       timeWindow: '5-10天',
-      description: '免疫功能受损可能导致继发感染，需要预防',
+      description: '患者存在免疫功能紊乱的风险，可能表现为过度免疫反应或免疫功能抑制。实验室检查显示炎症指标明显升高（CRP 65.8mg/L），提示存在强烈的炎症反应。需要警惕免疫功能紊乱导致的并发症，如细菌感染、真菌感染等。',
       indicators: [
-        '新发热峰',
-        '炎症指标升高',
-        '痰培养阳性'
+        'CRP显著升高',
+        '淋巴细胞计数变化',
+        '炎症因子水平升高',
+        '免疫功能指标异常'
       ],
       references: [
-        'New fever spikes',
-        'Elevated inflammatory markers',
-        'Positive sputum culture'
+        '《重症新冠患者免疫功能监测专家共识》',
+        '《感染性疾病免疫治疗指南》',
+        '国际免疫学会治疗建议2024版'
       ],
       suggestions: [
-        '规范使用抗生素',
-        '加强气道管理',
-        '注意无菌操作',
-        '监测细菌培养结果'
+        '定期监测免疫功能指标和炎症因子水平',
+        '根据免疫状态调整治疗方案，避免过度免疫反应',
+        '警惕继发感染，必要时进行预防性治疗'
       ]
     }
   ]

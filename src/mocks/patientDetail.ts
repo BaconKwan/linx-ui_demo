@@ -1,4 +1,4 @@
-import { PatientDetail } from './types';
+import { PatientDetail } from '@/types/mock';
 
 export const patientDetail: PatientDetail = {
   basicInfo: {

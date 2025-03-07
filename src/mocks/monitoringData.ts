@@ -1,4 +1,4 @@
-import { MonitoringData } from './types';
+import { MonitoringData } from '@/types/mock';
 
 export const monitoringData: MonitoringData = {
   vitalSigns: [
