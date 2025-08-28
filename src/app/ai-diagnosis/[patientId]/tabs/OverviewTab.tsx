@@ -9,7 +9,6 @@ import {
 import AIStatusPanel from '@/components/AIStatusPanel';
 import AIDiagnosisCard from '@/components/AIDiagnosisCard';
 import AITreatmentPlanCard from '@/components/AITreatmentPlanCard';
-import AIReasoningCard from '@/components/AIReasoningCard';
 
 const { Text } = Typography;
 
@@ -41,6 +40,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
         onOpenQuestionModal={onOpenQuestionModal}
         onOpenUploadModal={onOpenUploadModal}
         onOpenKnowledgeModal={onOpenKnowledgeModal}
+        aiReasoning={mockData.aiReasoning}
+        feedback={feedback}
+        onFeedback={onFeedback}
+        mockData={mockData}
       />
 
       <Row gutter={[24, 24]}>
@@ -71,12 +74,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
             onFeedback={onFeedback}
           />
 
-          {/* 使用封装后的 AI 推理过程卡片组件 */}
-          <AIReasoningCard 
-            aiReasoning={mockData.aiReasoning}
-            feedback={feedback}
-            onFeedback={onFeedback}
-          />
         </Col>
 
         {/* 右侧关键指标 */}

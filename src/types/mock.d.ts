@@ -237,6 +237,18 @@ export interface MockData {
   metagenomics: Metagenomics;
   aiDiagnosis: AIDiagnosis;
   aiTreatmentPlan: AITreatmentPlan;
+  // MDT 可视化的可选覆盖数据和冲突信息
+  mdtOverrides?: {
+    medicalRecord?: { mainComplaint?: string; presentIllness?: string };
+    imaging?: { findings?: string[]; conclusion?: string };
+    lab?: { abnormal?: Array<{ item: string; value: string; unit?: string }> };
+    conclusion?: string;
+  };
+  mdtConflicts?: Array<{
+    type: string;
+    info: string;
+    doctors: string[];
+  }>;
 }
 
 // 完整的监测数据类型

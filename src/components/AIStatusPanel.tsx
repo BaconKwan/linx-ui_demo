@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Row, Col, Steps, Space, Tag, Tooltip, Button, Typography, message } from 'antd';
+import React, { useState } from 'react';
+import { Card, Row, Col, Steps, Space, Tag, Tooltip, Button, Typography, message, Modal } from 'antd';
 import { 
   RobotOutlined, 
   CheckCircleOutlined, 
@@ -9,6 +9,8 @@ import {
   PlusCircleOutlined, 
   DatabaseOutlined 
 } from '@ant-design/icons';
+import dynamic from 'next/dynamic';
+const MDTReasoningFlow = dynamic(() => import('@/components/MDTReasoningFlow/MDTReasoningFlow'), { ssr: false });
 
 const { Text } = Typography;
 
@@ -16,6 +18,10 @@ export interface AIStatusPanelProps {
   onOpenQuestionModal: () => void;
   onOpenUploadModal: () => void;
   onOpenKnowledgeModal: () => void;
+  aiReasoning: any[];
+  feedback: Record<string, 'like' | 'dislike' | null>;
+  onFeedback: (section: string, type: 'like' | 'dislike') => void;
+  mockData?: any;
 }
 
 /**
@@ -25,27 +31,37 @@ export interface AIStatusPanelProps {
 const AIStatusPanel: React.FC<AIStatusPanelProps> = ({
   onOpenQuestionModal,
   onOpenUploadModal,
-  onOpenKnowledgeModal
+  onOpenKnowledgeModal,
+  aiReasoning,
+  feedback,
+  onFeedback,
+  mockData
 }) => {
+  const [isReasoningModalOpen, setIsReasoningModalOpen] = useState(false);
   return (
     <Card style={{ marginBottom: 24 }}>
       <Row gutter={[16, 16]}>
         <Col span={24}>
           {/* 执行进度指示器 */}
           <div style={{ marginBottom: 16 }}>
-            <Space align="center" style={{ marginBottom: 8 }}>
-              <RobotOutlined style={{ fontSize: 16, color: '#1890ff' }} />
-              <Text strong>AI 智能体思考步骤</Text>
-            </Space>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Space align="center">
+                <RobotOutlined style={{ fontSize: 16, color: '#1890ff' }} />
+                <Text strong>AI 智能体思考步骤</Text>
+              </Space>
+              <Button type="link" onClick={() => setIsReasoningModalOpen(true)}>
+                查看推理过程
+              </Button>
+            </div>
             <Steps
               size="small"
               current={4}
               style={{ marginTop: 8 }}
               items={[
-                { title: '病历分析', description: '完成' },
                 { title: '多模态融合', description: '完成' },
-                { title: '深度推理', description: '完成' },
-                { title: '自我检查', description: '通过' },
+                { title: '多学科推理', description: '完成' },
+                { title: '共识推理', description: '完成' },
+                { title: '综合分析', description: '完成' },
               ]}
             />
           </div>
@@ -122,6 +138,16 @@ const AIStatusPanel: React.FC<AIStatusPanelProps> = ({
               </Button>
             </Tooltip>
           </Space>
+          <Modal
+            open={isReasoningModalOpen}
+            title="AI 诊断推理过程"
+            width={1200}
+            bodyStyle={{ height: '80vh' }}
+            footer={null}
+            onCancel={() => setIsReasoningModalOpen(false)}
+          >
+            <MDTReasoningFlow mockData={mockData} />
+          </Modal>
         </Col>
       </Row>
     </Card>

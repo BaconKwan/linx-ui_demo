@@ -239,4 +239,40 @@ export const mockData: MockData = {
       ]
     }
   }
+  ,
+  // 以下为 MDT 可视化所需的覆盖数据（仅新增，不影响其它模块）
+  mdtOverrides: {
+    medicalRecord: {
+      mainComplaint: '发热伴意识障碍6天',
+      presentIllness: '进食隔夜西瓜后出现发热（最高39.2℃），意识模糊并逐渐加重，血氧下降'
+    },
+    imaging: {
+      findings: [
+        '胸部CT：双侧少量胸腔积液，右肺上叶前段厚壁囊状含气影',
+        '头颅CT：幕上脑室扩张及间质性脑水肿'
+      ],
+      conclusion: '肺部炎症合并空洞样改变，颅内影像提示中枢神经系统受累'
+    },
+    lab: {
+      abnormal: [
+        { item: 'WBC', value: '11.0', unit: '×10^9/L' },
+        { item: 'CRP', value: '26.22', unit: 'g/L' },
+        { item: 'Na+', value: '120.66', unit: 'mmol/L' },
+        { item: 'D-dimer', value: '23.92', unit: 'g/L' }
+      ]
+    },
+    conclusion: '化脓性脑膜炎合并肺部感染，病情危重，需ICU入院与强化治疗'
+  },
+  mdtConflicts: [
+    {
+      type: '治疗方案冲突',
+      info: '呼吸科主张升级抗生素覆盖耐药菌；重症科强调生命支持优先',
+      doctors: ['呼吸专科医生', '重症专科医生']
+    },
+    {
+      type: '优先级冲突',
+      info: '生命支持与针对性抗感染两条路径均需紧急处理，排序需协调',
+      doctors: ['重症专科医生', '呼吸专科医生']
+    }
+  ]
 }; 
