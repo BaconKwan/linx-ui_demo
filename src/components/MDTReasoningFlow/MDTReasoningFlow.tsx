@@ -54,7 +54,45 @@ const MDTReasoningFlow: React.FC<MDTReasoningFlowProps> = ({ mockData }) => {
     position: { x: 0, y: 0 }
   }));
 
-  const edges: Edge[] = graph.edges.map((e) => ({ id: e.id, source: e.source, target: e.target }));
+  // Edge styling: dashed lines, color consistent with source node palette
+  const getPalette = (agentType?: string, status?: string, id?: string) => {
+    if ((status === 'default') && agentType && agentType.endsWith('_specialist')) {
+      return { bg: '#f5f5f5', border: '#d9d9d9' };
+    }
+    if (id === 'patient') {
+      return { bg: '#fffbe6', border: '#ffe58f' };
+    }
+    if (agentType === 'conflict') {
+      return { bg: '#f9f0ff', border: '#efdbff' };
+    }
+    if (agentType && (agentType.includes('medical') || agentType.endsWith('analyzer'))) {
+      return { bg: '#e6f4ff', border: '#91caff' };
+    }
+    if (agentType && agentType.endsWith('_specialist')) {
+      return { bg: '#f6ffed', border: '#b7eb8f' };
+    }
+    if (agentType === 'supervisor') {
+      return { bg: '#fff1f0', border: '#ffa39e' };
+    }
+    return { bg: '#ffffff', border: '#d9d9d9' };
+  };
+
+  const nodeMap: Record<string, Node> = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const edges: Edge[] = graph.edges.map((e) => {
+    const sourceNode = nodeMap[e.source];
+    const palette = getPalette((sourceNode?.data as any)?.agentType, (sourceNode?.data as any)?.status, sourceNode?.id);
+    return {
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      style: {
+        stroke: palette.border,
+        strokeDasharray: '6 6',
+        strokeWidth: 2
+      },
+      type: 'bezier'
+    } as Edge;
+  });
 
   const layouted = useMemo(() => getLayouted(nodes, edges), [graph]);
 
