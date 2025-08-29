@@ -274,5 +274,92 @@ export const mockData: MockData = {
       info: '生命支持与针对性抗感染两条路径均需紧急处理，排序需协调',
       doctors: ['重症专科医生', '呼吸专科医生']
     }
-  ]
+  ],
+
+  // RAG 引用数据
+  ragReferences: {
+    'mh': {
+      literature: [
+        {
+          title: '发热伴意识障碍的临床诊断思路',
+          authors: '张医生等',
+          journal: '中华内科杂志',
+          year: '2023',
+          relevance: 95,
+          summary: '详细分析了发热伴意识障碍的鉴别诊断要点和临床路径'
+        }
+      ],
+      guidelines: [
+        {
+          name: '发热待查诊疗指南',
+          organization: '中华医学会',
+          version: '2022',
+          relevance: 88,
+          keyPoints: ['发热分级标准', '意识障碍评估', '感染性病因排查']
+        }
+      ]
+    },
+    'lab': {
+      literature: [
+        {
+          title: '炎症指标在感染性疾病中的应用',
+          authors: '李医生等',
+          journal: '检验医学',
+          year: '2023',
+          relevance: 92,
+          summary: 'CRP、PCT等炎症指标在感染诊断中的临床意义'
+        }
+      ],
+      evidence: [
+        {
+          type: '实验室检查',
+          source: '临床检验手册',
+          confidence: 0.9,
+          content: 'WBC升高、CRP升高提示细菌感染，D-二聚体升高提示凝血激活'
+        }
+      ]
+    },
+    'resp': {
+      literature: [
+        {
+          title: '病毒性肺炎的诊断与治疗',
+          authors: '王医生等',
+          journal: '呼吸病学',
+          year: '2023',
+          relevance: 89,
+          summary: '病毒性肺炎的影像学特征、病原学检测和治疗策略'
+        }
+      ],
+      cases: [
+        {
+          id: 'CASE-001',
+          diagnosis: '新型冠状病毒肺炎',
+          similarity: 87,
+          outcome: '治愈出院',
+          keyLearnings: ['早期抗病毒治疗的重要性', '影像学动态观察', '并发症预防']
+        }
+      ]
+    },
+    'sup': {
+      literature: [
+        {
+          title: '多学科会诊在复杂感染性疾病中的应用',
+          authors: '陈医生等',
+          journal: '中华医学杂志',
+          year: '2023',
+          relevance: 96,
+          summary: 'MDT模式在复杂感染性疾病诊断和治疗中的价值'
+        }
+      ],
+      guidelines: [
+        {
+          name: '感染性疾病多学科诊疗专家共识',
+          organization: '中国医师协会',
+          version: '2023',
+          relevance: 94,
+          keyPoints: ['MDT组织架构', '会诊流程', '共识形成机制', '治疗决策制定']
+        }
+      ]
+    }
+  }
 }; 

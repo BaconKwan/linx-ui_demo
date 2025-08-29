@@ -249,6 +249,40 @@ export interface MockData {
     info: string;
     doctors: string[];
   }>;
+  
+  // RAG 引用数据类型
+  ragReferences?: {
+    [key: string]: {
+      literature?: Array<{
+        title: string;
+        authors: string;
+        journal: string;
+        year: string;
+        relevance: number;
+        summary: string;
+      }>;
+      guidelines?: Array<{
+        name: string;
+        organization: string;
+        version: string;
+        relevance: number;
+        keyPoints: string[];
+      }>;
+      cases?: Array<{
+        id: string;
+        diagnosis: string;
+        similarity: number;
+        outcome: string;
+        keyLearnings: string[];
+      }>;
+      evidence?: Array<{
+        type: string;
+        source: string;
+        confidence: number;
+        content: string;
+      }>;
+    };
+  };
 }
 
 // 完整的监测数据类型

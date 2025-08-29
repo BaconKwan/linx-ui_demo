@@ -41,7 +41,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '病历汇总Agent',
       layer: 1,
       agentType: 'medical_history_summarizer',
-      summary: '职责：汇总病历要点；关键：提取核心症状与时序',
+      summary: '负责分析患者病历信息，提取关键症状和病史要点，为后续诊断提供基础数据支持。',
       details: {
         evidence: [
           overrides?.medicalRecord?.mainComplaint || mockData?.medicalRecord?.mainComplaint || '发热3天，呼吸困难2天',
@@ -58,7 +58,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '实验室检查Agent',
       layer: 1,
       agentType: 'lab_analyzer',
-      summary: '职责：识别实验室异常；关键：定位炎症/凝血风险',
+      summary: '负责分析实验室检查结果，评估炎症指标和凝血功能，为感染诊断提供客观依据。',
       details: {
         evidence: ((overrides?.lab?.abnormal || mockData?.labResults?.abnormal) || []).map((i: any) => `${i.item} ${i.value}${i.unit || ''}`),
         output: [
@@ -72,7 +72,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '病原学Agent',
       layer: 1,
       agentType: 'pathogen_analyzer',
-      summary: '职责：整合病原证据；关键：确证新冠并评估合并感染',
+      summary: '负责分析病原学检测结果，识别感染病原体类型，为抗感染治疗提供精准指导。',
       details: {
         evidence: (mockData?.metagenomics?.results || []).map((r: any) => `${r.pathogen} ${r.reads} reads (${r.percentage})`),
         output: [
@@ -86,7 +86,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '影像学Agent',
       layer: 1,
       agentType: 'imaging_analyzer',
-      summary: '职责：概括影像要点；关键：病毒性肺炎征象',
+      summary: '负责分析影像学检查结果，评估肺部病变范围和严重程度，为病情判断提供影像依据。',
       details: {
         evidence: (overrides?.imaging?.findings || mockData?.imaging?.findings) || [],
         output: [
@@ -104,7 +104,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '呼吸科Agent',
       layer: 2,
       agentType: 'respiratory_specialist',
-      summary: '职责：呼吸系统诊断；关键：病毒性肺炎并评估细菌合并',
+      summary: '负责呼吸系统疾病的专业诊断，结合临床症状和检查结果，制定呼吸系统治疗方案。',
       details: {
         thinking: [
           '综合病原学（PCR+宏基因组）、影像学（磨玻璃影）、实验室（炎症指标）',
@@ -121,7 +121,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '重症医学Agent',
       layer: 2,
       agentType: 'icu_specialist',
-      summary: `职责：严重度与器官支持评估；关键：${mockData?.aiDiagnosis?.severity?.level || '—'}并强化监测`,
+      summary: '负责重症患者的综合评估，监测生命体征和器官功能，制定重症监护和治疗策略。',
       details: {
         thinking: ['基于第一层摘要与生命体征，评估病情分级与器官支持需求'],
         output: [
@@ -135,7 +135,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '肿瘤科Agent',
       layer: 2,
       agentType: 'oncology_specialist',
-      summary: '职责：肿瘤性病变排查；关键：当前证据不支持肿瘤',
+      summary: '由于患者无肿瘤相关病史和症状，本次会诊不参与肿瘤学评估。',
       details: { output: ['不参与本次会诊推理'] },
       status: 'default'
     },
@@ -144,7 +144,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
       label: '儿科Agent',
       layer: 2,
       agentType: 'pediatrics_specialist',
-      summary: '职责：儿童专科评估；关键：非儿童病例，不参与推理',
+      summary: '由于患者为成人，本次会诊不涉及儿科专业评估。',
       details: { output: ['不参与本次会诊推理'] },
       status: 'default'
     }
@@ -159,13 +159,15 @@ export function buildMDTGraph(mockData: any): MDTGraph {
         label: `${c.type}`,
         layer: 3,
         agentType: 'conflict',
-        summary: `职责：记录与协调冲突；关键：${c.info}`,
+        summary: '呼吸科与重症科在细菌合并感染评估上存在分歧，需要进一步讨论达成共识。',
         details: {
           thinking: [c.info],
           output: ['已记录冲突，交由主席组织讨论并促成共识']
         },
         status: 'warning'
       });
+      
+      // Connect doctors to conflict
       (c.doctors || []).forEach((doc: string, i: number) => {
         const doctorNodeId =
           doc.includes('呼吸') ? 'resp' : doc.includes('重症') ? 'icu' : doc.includes('肿瘤') ? 'onc' : doc.includes('儿科') ? 'ped' : '';
@@ -173,6 +175,9 @@ export function buildMDTGraph(mockData: any): MDTGraph {
           edges.push({ id: `${doctorNodeId}-${conflictId}-${i}`, source: doctorNodeId, target: conflictId, label: '冲突提出' });
         }
       });
+      
+      // Connect conflict to supervisor
+      edges.push({ id: `${conflictId}-sup`, source: conflictId, target: 'sup', label: '冲突协调' });
     });
   }
 
@@ -182,7 +187,7 @@ export function buildMDTGraph(mockData: any): MDTGraph {
     label: '主席Agent',
     layer: 4,
     agentType: 'supervisor',
-    summary: '职责：识别冲突并达成共识；关键：形成综合诊疗结论',
+    summary: '作为会诊主席，综合各专科意见，协调分歧，形成最终诊断结论和治疗建议。',
     details: {
       thinking: [
         '汇总专科意见，定位分歧点（是否细菌合并、抗凝策略等）',
@@ -195,59 +200,30 @@ export function buildMDTGraph(mockData: any): MDTGraph {
     status: 'success'
   });
 
-  // Layer 3.5: Conflicts from overrides
-  if (Array.isArray(mockData?.mdtConflicts)) {
-    mockData.mdtConflicts.forEach((c: any, idx: number) => {
-      const conflictId = `conflict_${idx + 1}`;
-      nodes.push({
-        id: conflictId,
-        label: `${c.type}`,
-        layer: 3,
-        agentType: 'conflict',
-        summary: `职责：记录与协调冲突；关键：${c.info}`,
-        details: {
-          thinking: [c.info],
-          output: ['已记录冲突，交由主席组织讨论并促成共识']
-        },
-        status: 'warning'
-      });
-      (c.doctors || []).forEach((doc: string, i: number) => {
-        const doctorNodeId =
-          doc.includes('呼吸') ? 'resp' : doc.includes('重症') ? 'icu' : doc.includes('肿瘤') ? 'onc' : doc.includes('儿科') ? 'ped' : '';
-        if (doctorNodeId) {
-          edges.push({ id: `${doctorNodeId}-${conflictId}-${i}`, source: doctorNodeId, target: conflictId, label: '冲突提出' });
-        }
-      });
-      edges.push({ id: `${conflictId}-sup`, source: conflictId, target: 'sup', label: '冲突协调' });
-    });
-  }
-
   // Edges (top-to-bottom)
   const firstLayer = ['mh', 'lab', 'pathogen', 'img'];
+  
   // patient -> first layer
   firstLayer.forEach((id) => {
     edges.push({ id: `patient-${id}`, source: 'patient', target: id, label: '原始数据' });
   });
+  
+  // first layer -> specialists
   firstLayer.forEach((id) => {
-    edges.push({ id: `${id}-resp`, source: id, target: 'resp', label: '摘要' });
-    edges.push({ id: `${id}-icu`, source: id, target: 'icu', label: '摘要' });
-    edges.push({ id: `${id}-onc`, source: id, target: 'onc', label: '摘要' });
-    edges.push({ id: `${id}-ped`, source: id, target: 'ped', label: '摘要' });
-  });
-
-  // Also connect patient to specialists for original context
-  ['resp', 'icu', 'onc', 'ped'].forEach((id) => {
-    edges.push({ id: `patient-${id}`, source: 'patient', target: id, label: '原始数据' });
-  });
-
-  // Conflicts -> supervisor, and specialists -> supervisor
-  if (Array.isArray(mockData?.mdtConflicts)) {
-    mockData.mdtConflicts.forEach((c: any, idx: number) => {
-      const conflictId = `conflict_${idx + 1}`;
-      edges.push({ id: `${conflictId}-sup`, source: conflictId, target: 'sup', label: '冲突协调' });
+    ['resp', 'icu'].forEach((specialistId) => {
+      edges.push({ id: `${id}-${specialistId}`, source: id, target: specialistId, label: '摘要' });
     });
-  }
-  ['resp', 'icu'].forEach((id) => edges.push({ id: `${id}-sup`, source: id, target: 'sup', label: '会诊输出' }));
+  });
+
+  // patient -> specialists for original context
+  ['resp', 'icu'].forEach((id) => {
+    edges.push({ id: `patient-${id}-context`, source: 'patient', target: id, label: '原始数据' });
+  });
+
+  // specialists -> supervisor
+  ['resp', 'icu'].forEach((id) => {
+    edges.push({ id: `${id}-sup`, source: id, target: 'sup', label: '会诊输出' });
+  });
 
   return { nodes, edges };
 }

@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import ReactFlow, { Background, Controls, Edge, MiniMap, Node } from 'reactflow';
+import ReactFlow, { Background, Controls, Edge, MiniMap, Node, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { buildMDTGraph } from '@/lib/buildMDTGraph';
 import { AgentNodeData } from '@/types/mdt';
 import AgentNode from './AgentNode';
-import DetailsDrawer from './DetailsDrawer';
+import RAGReferencesDrawer from './RAGReferencesDrawer';
 
 export interface MDTReasoningFlowProps {
   mockData: any;
@@ -42,15 +42,23 @@ const getLayouted = (nodes: Node[], edges: Edge[]) => {
   return { nodes: positioned, edges };
 };
 
-const MDTReasoningFlow: React.FC<MDTReasoningFlowProps> = ({ mockData }) => {
+const MDTReasoningFlowInner: React.FC<MDTReasoningFlowProps> = ({ mockData }) => {
   const graph = useMemo(() => buildMDTGraph(mockData), [mockData]);
 
-  const [selected, setSelected] = useState<AgentNodeData | null>(null);
+  const [selectedRAG, setSelectedRAG] = useState<{ nodeId: string; nodeLabel: string } | null>(null);
 
   const nodes: Node[] = graph.nodes.map((n) => ({
     id: n.id,
     type: 'agent',
-    data: { ...n, onOpenDetails: () => setSelected(n), disabled: n.status === 'default' && n.agentType.endsWith('_specialist') },
+    draggable: true, // 启用拖拽
+    data: { 
+      ...n, 
+      onOpenRAG: (nodeId: string) => {
+        const node = graph.nodes.find(node => node.id === nodeId);
+        setSelectedRAG({ nodeId, nodeLabel: node?.label || '' });
+      },
+      disabled: n.status === 'default' && n.agentType.endsWith('_specialist') 
+    },
     position: { x: 0, y: 0 }
   }));
 
@@ -80,7 +88,7 @@ const MDTReasoningFlow: React.FC<MDTReasoningFlowProps> = ({ mockData }) => {
   const nodeMap: Record<string, Node> = Object.fromEntries(nodes.map((n) => [n.id, n]));
   const edges: Edge[] = graph.edges.map((e) => {
     const sourceNode = nodeMap[e.source];
-    const palette = getPalette((sourceNode?.data as any)?.agentType, (sourceNode?.data as any)?.status, sourceNode?.id);
+    const palette = getPalette((sourceNode?.data as any)?.agentType, (sourceNode?.data as any)?.status, (sourceNode?.data as any)?.id);
     return {
       id: e.id,
       source: e.source,
@@ -96,26 +104,46 @@ const MDTReasoningFlow: React.FC<MDTReasoningFlowProps> = ({ mockData }) => {
 
   const layouted = useMemo(() => getLayouted(nodes, edges), [graph]);
 
+  // Generate RAG references for the selected node
+  const getRAGReferences = (nodeId: string) => {
+    const node = graph.nodes.find(n => n.id === nodeId);
+    if (!node) return undefined;
+
+    // 从 mockData 中获取 RAG 引用数据
+    return mockData?.ragReferences?.[nodeId] || undefined;
+  };
+
   return (
     <div style={{ height: '72vh' }}>
-      <ReactFlow nodes={layouted.nodes} edges={layouted.edges} nodeTypes={nodeTypes} fitView>
+      <ReactFlow 
+        nodes={layouted.nodes} 
+        edges={layouted.edges} 
+        nodeTypes={nodeTypes} 
+        fitView
+        nodesDraggable={true}
+        nodesConnectable={false}
+        elementsSelectable={true}
+        selectNodesOnDrag={false}
+      >
         <MiniMap />
         <Controls />
         <Background />
       </ReactFlow>
-      <DetailsDrawer
-        open={!!selected}
-        onClose={() => setSelected(null)}
-        title={selected?.label}
-        details={{
-          thinking: selected?.agentType.endsWith('analyzer') ? undefined : selected?.details?.thinking,
-          evidence: selected?.agentType.endsWith('_specialist') || selected?.agentType === 'supervisor' ? undefined : selected?.details?.evidence,
-          output: selected?.details?.output,
-        }}
-        hideTitle={false}
-        outputTitle={selected?.id === 'patient' ? '数据模态' : '推理结论'}
+      <RAGReferencesDrawer
+        open={!!selectedRAG}
+        onClose={() => setSelectedRAG(null)}
+        title={selectedRAG?.nodeLabel}
+        ragReferences={selectedRAG ? getRAGReferences(selectedRAG.nodeId) : undefined}
       />
     </div>
+  );
+};
+
+const MDTReasoningFlow: React.FC<MDTReasoningFlowProps> = (props) => {
+  return (
+    <ReactFlowProvider>
+      <MDTReasoningFlowInner {...props} />
+    </ReactFlowProvider>
   );
 };
 
